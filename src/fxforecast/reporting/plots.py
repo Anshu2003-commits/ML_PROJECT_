@@ -118,18 +118,24 @@ def forecast_paths(actual: pd.Series, forecasts: dict[str, pd.Series], path: Pat
     return _save(fig, path)
 
 
-def theil_u_dots(table: pd.DataFrame, path: Path, *, title: str, reference: dict[str, float] | None = None) -> Path:
+def theil_u_dots(table: pd.DataFrame, path: Path, *, title: str, reference: dict[str, float] | None = None,
+                 ncols: int | None = None) -> Path:
     """Small multiples by column (e.g. horizon): one row per model, one dot per feature set.
 
     ``table`` index = (model, feature_set), columns = panels; values = Theil's U.
     A vertical line at 1 marks the random walk; ``reference`` adds a dashed line per panel (e.g. drift).
+    ``ncols`` wraps the panels into a grid (default: one row).
     """
     models = list(dict.fromkeys(table.index.get_level_values(0)))
     sets = list(dict.fromkeys(table.index.get_level_values(1)))
-    fig, axes = plt.subplots(1, table.shape[1], figsize=(3.0 * table.shape[1] + 1, 0.42 * len(models) + 1.4),
+    ncols = ncols or table.shape[1]
+    nrows = int(np.ceil(table.shape[1] / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(3.6 * ncols + 1, (0.42 * len(models) + 0.9) * nrows + 0.9),
                              sharey=True, squeeze=False)
     lo, hi = np.nanmin(table.to_numpy()), np.nanmax(table.to_numpy())
-    for ax, col in zip(axes[0], table.columns):
+    for ax in list(axes.flat)[table.shape[1]:]:
+        ax.set_visible(False)
+    for ax, col in zip(axes.flat, table.columns):
         ax.axvline(1.0, color=AXIS, lw=1.2, zorder=1)
         if reference and col in reference:
             ax.axvline(reference[col], color=INK_2, lw=1, ls="--", zorder=1)
@@ -144,7 +150,8 @@ def theil_u_dots(table: pd.DataFrame, path: Path, *, title: str, reference: dict
         ax.set_title(str(col), loc="left")
         ax.set_xlim(lo - 0.03, hi + 0.03)
         ax.grid(axis="y", visible=False)
-    axes[0][0].set_yticks(range(len(models)), models)
+    for row in axes:
+        row[0].set_yticks(range(len(models)), models)
     axes[0][0].invert_yaxis()
     axes[0][-1].legend(frameon=False, fontsize=7, loc="lower right")
     note = "solid line: random walk (U = 1)" + ("; dashed: drift" if reference else "") + "; left of the line = better"

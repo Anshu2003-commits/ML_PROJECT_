@@ -16,6 +16,7 @@ ML coursework project. It extends Giri & Kaushik (2020), [arXiv:2002.10247](http
 
 ## 📄 Report
 **[report/REPORT.md](report/REPORT.md)**: the full write-up (abstract, method, results for RQ1/RQ2, discussion, limitations, references).
+Word version for submission: **[report/REPORT.docx](report/REPORT.docx)** (A4, 11 pages; rebuilt with `node report/build_docx.js . report/REPORT.docx`).
 
 ## Headline results
 Full numbers: [results/final](results/final/README.md) · tests: [analysis](results/final/analysis.md) · narrative: [docs/findings.md](docs/findings.md) · validation: [docs/VALIDATION.md](docs/VALIDATION.md)
