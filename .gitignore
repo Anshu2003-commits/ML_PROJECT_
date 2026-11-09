@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Secrets
+.env
+
+# Regenerable data and run outputs (raw FRED snapshots ARE committed)
+data/processed/
+results/runs/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
