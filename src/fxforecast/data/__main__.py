@@ -16,6 +16,7 @@ import pandas as pd
 from fxforecast.config import DEFAULT_CONFIG, load_config, resolve_path, series_ids
 from fxforecast.data.fetch import fetch_series, load_series
 from fxforecast.data.panel import build_panel, common_window
+from fxforecast.data.rbi import LOCAL_SERIES
 from fxforecast.data.validate import coverage_report, validate_in_window
 
 log = logging.getLogger("fxforecast.data")
@@ -33,9 +34,12 @@ def main(argv: list[str] | None = None) -> None:
     processed_dir = resolve_path(cfg["data"]["processed_dir"])
 
     raw = {}
-    for column, fred_id in series_ids(cfg).items():
-        fetch_series(fred_id, raw_dir, refresh=args.refresh)
-        raw[column] = load_series(fred_id, raw_dir)
+    for column, series_id in series_ids(cfg).items():
+        if series_id in LOCAL_SERIES:          # committed local file (e.g. RBI), never downloaded
+            raw[column] = LOCAL_SERIES[series_id](raw_dir)
+            continue
+        fetch_series(series_id, raw_dir, refresh=args.refresh)
+        raw[column] = load_series(series_id, raw_dir)
     print(coverage_report(raw).to_string())
     if cfg["data"].get("fx_daily"):
         # daily series is not part of the monthly panel; cached for the end-of-month check

@@ -71,6 +71,15 @@ def test_publication_lag_table(preds):
     assert ("walk_forward", 1, "svr (FX+macro)") in t.index
 
 
+def test_compare_runs_shows_changes(preds):
+    alt = preds.copy()
+    sel = alt.model == "var"
+    alt.loc[sel, "fx_pred"] = alt.loc[sel, "fx_true"]          # perfect VAR in the variant
+    t = an.compare_runs(preds, alt, "base", "alt")
+    assert t.loc[("walk_forward", 1, "var (FX+macro)"), "alt"] == pytest.approx(0.0)
+    assert t.loc[("walk_forward", 1, "ar (FX only)"), "change"] == pytest.approx(0.0)
+
+
 def test_latest_run_picks_newest_completed(tmp_path):
     for name in ("final-20260101T000000Z-aaaa", "final-20260102T000000Z-bbbb", "final-20260103T000000Z-cccc"):
         (tmp_path / name).mkdir()

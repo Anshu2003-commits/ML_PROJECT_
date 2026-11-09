@@ -1,12 +1,12 @@
 # Forecasting the USD/INR Exchange Rate with Macroeconomic Indicators: Econometric, Machine-Learning and Deep-Learning Models Against Simple Benchmarks
 
-**Author:** Anshu Kumar Sharma · **Course:** Machine Learning coursework · **Code and data:** https://github.com/Anshu2003-commits/ML_PROJECT_ (tag `v1.0`)
+**Author:** Anshu Kumar Sharma · **Course:** Machine Learning coursework · **Code and data:** https://github.com/Anshu2003-commits/ML_PROJECT_ (tag `v1.2`)
 
 ---
 
 ## Abstract
 
-This project revisits Giri & Kaushik (2020), who reported that an LSTM (97.83% "accuracy") and an SVM (97.17%) outperform a VAR (96.31%) when forecasting monthly USD/INR from US–India macroeconomic indicators. We rebuild the study on public FRED data (1994–2023) with three additions the original lacks: naive benchmarks (random walk and drift), leakage-free expanding-window evaluation over 2010–2023 at 1-, 3- and 6-month horizons, and formal tests of predictive accuracy (Diebold–Mariano, Clark–West). On the paper's own test window, a "no change" forecast has an RMSE of 0.95 INR (1.28 on end-of-month rates), below the paper's best model (LSTM, 1.69 INR), and its "accuracy" is 98.9%. Our re-implemented VAR, SVR and LSTM all reach RMSEs of 0.87–1.04 INR on that window, but none is significantly better than the random walk. Over 2010–2023, no model significantly beats the random walk or a drift forecast at any horizon (RQ1), and the ML/DL models are not significantly better than the VAR. Macroeconomic differentials do contain statistically significant predictive information beyond exchange-rate history in 6 of 9 model-family/horizon cases (Clark–West, mostly at 3–6 months), but the RMSE gains are at most about 9% and do not survive comparison with drift (RQ2). Model rankings change across sub-periods: macro models do best in 2010–2014 and worst in 2020–2023. The results are robust to publication lags and to the exchange-rate definition.
+This project revisits Giri & Kaushik (2020), who reported that an LSTM (97.83% "accuracy") and an SVM (97.17%) outperform a VAR (96.31%) when forecasting monthly USD/INR from US–India macroeconomic indicators. We rebuild the study on public FRED data (1994–2023) with three additions the original lacks: naive benchmarks (random walk and drift), leakage-free expanding-window evaluation over 2010–2023 at 1-, 3- and 6-month horizons, and formal tests of predictive accuracy (Diebold–Mariano, Clark–West). On the paper's own test window, a "no change" forecast has an RMSE of 0.95 INR (1.28 on end-of-month rates), below the paper's best model (LSTM, 1.69 INR), and its "accuracy" is 98.9%. Our re-implemented VAR, SVR and LSTM all reach RMSEs of 0.87–1.04 INR on that window, but none is significantly better than the random walk. Over 2010–2023, no model significantly beats the random walk or a drift forecast at any horizon (RQ1), and the ML/DL models are not significantly better than the VAR. Macroeconomic differentials do contain statistically significant predictive information beyond exchange-rate history in 6 of 9 model-family/horizon cases (Clark–West, mostly at 3–6 months), but the RMSE gains are at most about 9% and do not survive comparison with drift (RQ2). Model rankings change across sub-periods: macro models do best in 2010–2014 and worst in 2020–2023. The results are robust to publication lags, to the exchange-rate definition and to using a market rather than a policy interest rate for India.
 
 ---
 
@@ -50,7 +50,7 @@ Contributions: (i) a full replication on public data with naive benchmarks; (ii)
 
 **Feature design.** The paper uses raw level differences (USA − India). Raw levels are in different units (for example, US M3 in USD and India's in INR) and use different index base years, so their difference has no economic meaning. We instead use unit-free differentials, each tied to a theory (Table 1). Twelve-month changes also remove seasonality from India's non-seasonally-adjusted CPI and M3 without fitting anything, so they cannot leak test information.
 
-**Data issues found and documented.** (i) India's "immediate" interest rate on FRED equals the RBI central-bank rate in 346 of 349 months and is flat at 6% from 2003 to 2012, so `rate_diff` measures a *policy*-rate differential. (ii) India's seasonally adjusted M3 ends in 2018-12, so the non-adjusted series is used. (iii) US CPI for October 2025 was never published; this is outside the sample. (iv) COVID causes extreme values in industrial-production growth in 2020–21.
+**Data issues found and documented.** (i) India's "immediate" interest rate on FRED equals the RBI central-bank rate in 346 of 349 months and is flat at 6% from 2003 to 2012, so `rate_diff` measures a *policy*-rate differential. A robustness variant uses RBI's weighted average call money rate instead (Section 5.5). (ii) India's seasonally adjusted M3 ends in 2018-12, so the non-adjusted series is used. (iii) US CPI for October 2025 was never published; this is outside the sample. (iv) COVID causes extreme values in industrial-production growth in 2020–21.
 
 **Diagnostics** (training period only, to 2016-07). Every log level is non-stationary (ADF and KPSS). Of the differentials, `dlog_fx` and equity returns are stationary; the others are differenced once for the VAR. Johansen's trace test finds one cointegrating relation among log FX, relative prices, output, money and the rate differential. Bivariate Granger tests reject non-causality (5%) only for the IP-growth and trade-balance differentials. Monthly FX changes have lag-1 autocorrelation of about 0.30, partly an artefact of monthly averaging (Working, 1960).
 
@@ -155,6 +155,7 @@ Macro models perform best in **2010–2014**, which includes the 2013 "taper tan
 
 - **Publication lags.** Delaying macro inputs by 1 or 2 months leaves results almost unchanged (LSTM + macro at 6 months: U 0.905 → 0.911 → 0.919), so the findings do not rely on using data before it would have been released.
 - **Exchange-rate definition.** The comparison with the paper holds on end-of-month rates (Section 5.1).
+- **India's interest rate.** Re-running everything with RBI's weighted average call money rate (a market rate, from RBI's DBIE database) in place of FRED's policy-rate proxy changes individual Theil's U values by up to about 0.05 but not the conclusions. No model significantly beats the random walk or drift. Macro data is significant (Clark–West, 5%) in 7 of 9 walk-forward cases instead of 6. The LSTM gains most (h = 3: U 1.02 → 0.97; h = 6: 0.905 → 0.900), while the VECM gets worse. The market-rate differential also Granger-causes FX at lag 6 (p = 0.01), which the policy rate never did.
 - **SVR grid.** In a first grid, inner-CV tuning chose the smallest γ in 50 of 80 fits. Widening the grid (γ down to 10⁻⁴, C up to 10⁴), a decision made from tuning choices only, changed Theil's U by at most 0.006. Both runs are kept in the repository.
 - **LSTM seeds.** FX-only LSTMs are stable across seeds (RMSE standard deviation 0.005–0.017 INR). LSTMs with macro inputs are not: at 3 months, single-seed RMSE ranges from 1.95 to 2.57 INR, so averaging seeds is essential.
 - **Reproducibility.** The final run reproduced every earlier stage result exactly, and a fresh clone of the repository reproduces the committed tables (Appendix A).
@@ -181,7 +182,7 @@ These results are diagnostic only. Choosing variables now, after seeing test res
 ## 7. Limitations
 
 - **Data vintage:** FRED provides revised data, not what was known in real time (ALFRED vintages were not used). The publication-lag check addresses release timing but not revisions.
-- **India interest rate:** this is a policy rate, not a market rate (FRED has no market short rate for India before 2011); RBI's call-money rate would be better.
+- **India interest rate:** the main results use FRED's series, which is effectively the RBI policy rate. A robustness run with RBI's market call money rate (Section 5.5) leaves the conclusions unchanged.
 - **Sample end:** the panel ends in 2023-01 because India's series on FRED stop; the 2023–2026 period is not evaluated.
 - **Small sample:** about 250 training months limit all learned models, especially the LSTM.
 - **Monthly averages:** `EXINUS` averages daily rates, which smooths changes and adds autocorrelation. End-of-month rates were used only for the benchmark check.
@@ -225,6 +226,8 @@ python -m fxforecast.experiments.run --stage publag1 --models svr lstm --feature
 python -m fxforecast.experiments.run --stage publag2 --models svr lstm --feature-sets fx_plus_macro --publication-lag 2
 python -m fxforecast.experiments.analysis     # significance, sub-periods, robustness, ablation
 python -m fxforecast.experiments.figures      # report figures
+# robustness: RBI market call money rate (same commands with --config configs/experiment_rbi.yaml,
+# stages final_rbi / publag1_rbi / publag2_rbi, then: analysis --config ... --suffix _rbi --compare-to "")
 python -m pytest                              # test suite
 ```
 

@@ -9,3 +9,4 @@ torch>=2.2
 matplotlib>=3.8
 seaborn>=0.13
 pytest>=8.0
+pdfplumber>=0.11          # optional: cross-checks the RBI table against the Handbook PDF
