@@ -43,14 +43,18 @@ def backtest(
         log.debug("%s refit %s: train=%d test=%d %.3fs", model.name, f"{fold.refit_date:%Y-%m}",
                   len(fold.train), len(fold.test), seconds)
         info = model.info() if hasattr(model, "info") else {}
-        out.append(pd.DataFrame({
+        frame = pd.DataFrame({
             "origin": fold.test,
             "refit_date": fold.refit_date,
             "y_true": y.loc[fold.test].to_numpy(),
             "y_pred": pred,
             "fit_seconds": seconds,
             "model_info": json.dumps(info, sort_keys=True),
-        }))
+        })
+        if hasattr(model, "predict_members"):   # e.g. one forecast per LSTM seed
+            members = np.asarray(model.predict_members(X.loc[fold.test]))
+            frame["y_pred_members"] = [json.dumps([round(float(v), 8) for v in col]) for col in members.T]
+        out.append(frame)
     return pd.concat(out, ignore_index=True)
 
 

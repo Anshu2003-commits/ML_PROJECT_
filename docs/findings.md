@@ -61,4 +61,23 @@ Theil's U vs random walk (below 1 = beats "no change"):
 - **The SVR prefers an almost linear fit.** Inner-CV tuning chose the smallest gamma in 50 of 80 fits on grid v1 and 30 of 80 on the widened grid. Widening the grid (gamma down to 0.0001, C up to 10000) changed Theil's U by at most 0.006, so the results are not sensitive to the grid. There is little nonlinear structure for the RBF kernel to exploit at monthly frequency.
 - **Cost:** the full SVR stage (2 feature sets, 4 scheme/horizon cases, 216-point grid × 5 inner splits per refit) takes about 12 minutes on a laptop CPU. VAR takes seconds.
 
+## M7: LSTM ([results/lstm](../results/lstm/README.md))
+
+Theil's U vs random walk (LSTM = average of 5 seeds):
+
+| | Replication h=1 | Walk-fwd h=1 | h=3 | h=6 |
+|---|---|---|---|---|
+| Drift (FX only) | 0.99 | **0.98** | **0.96** | 0.92 |
+| LSTM, FX only | 0.96 | 1.00 | 0.97 | 0.95 |
+| LSTM, FX + macro | 0.98 | 1.00 | 1.02 | **0.905** |
+| VAR, FX + macro | 0.97 | 1.06 | 0.99 | 0.93 |
+| SVR, FX + macro | 1.10 | 0.99 | 0.96 | 1.03 |
+
+- **Replication:** LSTM RMSE 0.91 INR vs the paper's LSTM 1.69. All three of our model classes (VAR 0.92, SVR 0.87, LSTM 0.91) are far below the paper's numbers, and all are close to the random walk (0.95). On FRED data the paper's ranking (LSTM < SVM < VAR) is not reproduced. The FX-only AR (0.85) is best on this window.
+- **The first model to beat drift in the walk-forward test** is LSTM + macro at 6 months (U 0.905 vs drift 0.919). The margin is small and needs a significance test (M8).
+- **RQ2, deep-learning family (LSTM FX only vs LSTM FX + macro):** macro data hurts at 1 and 3 months (U 0.996 → 1.000, and 0.97 → 1.02) and helps at 6 months (0.95 → 0.905). This matches the VAR's pattern at long horizons.
+- **Seed sensitivity:** the FX-only LSTM is stable across seeds (RMSE std 0.005 to 0.017 INR). The macro LSTM is much less stable, especially at 3 months: per-seed RMSE ranges from 1.95 to 2.57. More inputs on about 250 rows make training fragile; seed averaging matters.
+- **Early stopping fires early** (median best epoch 13). The networks stay close to a smooth, drift-like forecast, which is why the LSTM tracks drift closely. Architecture choice: hidden 32 in 49 of 80 refits; lookback 6 and 12 about equally often.
+- **Cost:** about 6 minutes for the LSTM stage (80 refits × (4 architecture trials + 4 extra seeds)), vs about 12 minutes for SVR and seconds for VAR.
+
 **Implication for RQ1/RQ2:** a multivariate model must beat both the random walk *and* drift to show that macro information helps. Any claim of an improvement needs a significance test (M8), because 29 test months is a small sample.

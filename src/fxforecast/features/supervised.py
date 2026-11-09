@@ -17,6 +17,7 @@ fact that, at month t, macro data for month t is not yet released.
 """
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
 from fxforecast.features.transforms import MACRO_FEATURES, TARGET
@@ -39,6 +40,20 @@ def select_lags(X: pd.DataFrame, n_lags: int) -> pd.DataFrame:
         raise ValueError("n_lags must be >= 1")
     keep = [c for c in X.columns if int(c.rsplit("_lag", 1)[1]) < n_lags]
     return X[keep]
+
+
+def to_sequences(X: pd.DataFrame, lookback: int) -> np.ndarray:
+    """Reshape lag columns into (rows, lookback, variables), oldest step first.
+
+    Step j of each sequence holds lag (lookback - 1 - j), so the last step is
+    the origin month: the layout an LSTM expects.
+    """
+    bases = list(dict.fromkeys(c.rsplit("_lag", 1)[0] for c in X.columns))
+    missing = [f"{b}_lag{k}" for b in bases for k in range(lookback) if f"{b}_lag{k}" not in X.columns]
+    if missing:
+        raise KeyError(f"lookback {lookback} needs columns {missing[:3]}...")
+    steps = [np.column_stack([X[f"{b}_lag{k}"].to_numpy() for b in bases]) for k in reversed(range(lookback))]
+    return np.stack(steps, axis=1).astype(np.float32)
 
 
 def h_step_target(dlog_fx: pd.Series, horizon: int) -> pd.Series:

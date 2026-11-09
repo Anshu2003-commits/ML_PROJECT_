@@ -22,13 +22,14 @@ import pandas as pd
 
 from fxforecast.config import DEFAULT_CONFIG, PROJECT_ROOT, load_config, resolve_path
 from fxforecast.evaluation.backtest import attach_levels, backtest
-from fxforecast.evaluation.metrics import metrics_table
+from fxforecast.evaluation.metrics import member_spread, metrics_table
 from fxforecast.evaluation.splits import replication_folds, walk_forward_folds
 from fxforecast.experiments.tracking import Run
 from fxforecast.features.supervised import make_supervised
 from fxforecast.features.transforms import macro_differentials, relative_levels
 from fxforecast.models import Forecaster
 from fxforecast.models.baselines import AutoRegressive, Drift, RandomWalk
+from fxforecast.models.lstm import LSTMForecaster
 from fxforecast.models.svr import SVRForecaster
 from fxforecast.models.var import VARForecaster, VECMForecaster
 from fxforecast.reporting.tables import to_markdown
@@ -61,6 +62,7 @@ def model_registry(cfg: dict, feats: pd.DataFrame, levels: pd.DataFrame) -> dict
         "var": (lambda h: VARForecaster(feats, h, **m["var"]), ["fx_plus_macro"]),
         "vecm": (lambda h: VECMForecaster(levels, h, **m["vecm"]), ["fx_plus_macro"]),
         "svr": (lambda h: SVRForecaster(h, **m["svr"]), ["fx_only", "fx_plus_macro"]),
+        "lstm": (lambda h: LSTMForecaster(h, **m["lstm"]), ["fx_only", "fx_plus_macro"]),
     }
 
 
@@ -111,6 +113,9 @@ def run(cfg: dict, stage: str, model_names: list[str], publication_lag: int = 0)
     choices = (preds.groupby(GROUP + ["refit_date"], sort=False)["model_info"].first()
                .loc[lambda s: s != "{}"].rename("chosen_settings"))
     choices.to_csv(tracker.dir / "model_choices.csv")
+    spread = member_spread(preds, GROUP)
+    if len(spread):
+        spread.to_csv(tracker.dir / "seed_spread.csv")
     preds.to_csv(tracker.dir / "predictions.csv", index=False)
     table.to_csv(tracker.dir / "metrics.csv")
     tracker.finish(models=model_names, publication_lag=publication_lag, n_forecasts=len(preds))
@@ -121,6 +126,12 @@ def write_report(table: pd.DataFrame, tracker: Run, out_dir: Path, models: list[
     out_dir.mkdir(parents=True, exist_ok=True)
     table.to_csv(out_dir / "metrics.csv")
     shutil.copyfile(tracker.dir / "model_choices.csv", out_dir / "model_choices.csv")
+    spread_md = ""
+    if (tracker.dir / "seed_spread.csv").exists():
+        shutil.copyfile(tracker.dir / "seed_spread.csv", out_dir / "seed_spread.csv")
+        spread = pd.read_csv(tracker.dir / "seed_spread.csv", index_col=list(range(len(GROUP))))
+        spread_md = ("### Seed variability (each seed scored on its own; the model above is the seed average)\n\n"
+                     + to_markdown(spread, 4) + "\n")
     cols = ["n", "rmse", "mae", "mape", "accuracy_pct", "hit_rate", "theil_u"]
     sections = []
     for (scheme, h), part in table.groupby(level=["scheme", "horizon"], sort=False):
@@ -135,6 +146,7 @@ Level metrics are on INR per USD. **theil_u** = RMSE / RMSE(random walk) on the 
 Settings each model chose on each refit (lag order, cointegration rank, ...) are in `model_choices.csv`.
 
 {chr(10).join(s + chr(10) for s in sections)}
+{spread_md}
 ### Base paper, for reference (replication period, h = 1, Bloomberg data)
 
 {to_markdown(PAPER, 4)}

@@ -44,6 +44,19 @@ def test_metrics_table_theil_u_relative_to_random_walk():
     assert table["n"].dtype.kind == "i"
 
 
+def test_member_spread_scores_each_seed():
+    import json
+    from fxforecast.evaluation.metrics import member_spread
+    preds = _preds("lstm", [100.0, 102.0], [0.0, 0.0])
+    preds["fx_origin"] = [100.0, 102.0]
+    preds["y_pred_members"] = [json.dumps([0.0, np.log(1.01)]), json.dumps([0.0, np.log(1.01)])]
+    table = member_spread(preds, ["scheme", "horizon", "feature_set", "model"])
+    row = table.iloc[0]
+    assert row["seeds"] == 2
+    assert row["rmse_min"] == pytest.approx(0.0)                              # seed 0 = exact
+    assert row["rmse_max"] == pytest.approx(np.sqrt((1.0 ** 2 + 1.02 ** 2) / 2))
+
+
 def test_metrics_table_requires_benchmark_on_same_origins():
     preds = pd.concat([_preds("random_walk", [98.0, 100.0], [0.0, 0.0]),
                        _preds("other", [99.0, 101.0], [0.01, 0.01], origins=("2021-01-01", "2021-02-01"))])
