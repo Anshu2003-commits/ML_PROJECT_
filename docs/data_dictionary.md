@@ -34,7 +34,7 @@ All data comes from FRED (Federal Reserve Bank of St. Louis) and is monthly. Raw
 - **US M3:** the Federal Reserve stopped publishing M3 in 2006. The OECD-constructed series used here continues to 2023-11.
 - **S&P 500:** FRED's `SP500` only covers about 10 years, so the OECD share price index is used for both countries for like-for-like definitions.
 - **India interest rate:** `IRSTCI01INM156N` is effectively the RBI administered/policy rate. It equals `IRSTCB01INM156N` in 346 of 349 months and is flat at 6% from 2003 to 2012. It is kept as a policy-rate proxy (decision D11).
-- **Not used:** `DEXINUS` (daily FX rate). `EXINUS` is already its monthly average.
+- **`DEXINUS` (daily FX rate)** is not part of the panel. It is cached only to build end-of-month rates for a robustness check, because the paper's Bloomberg data is likely end-of-month while `EXINUS` is a monthly average.
 
 ## Test periods this data supports
 | Purpose | Train | Test |

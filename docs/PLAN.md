@@ -202,12 +202,14 @@ ML_PROJECT_/
 │   │   └── lstm.py              # LSTM (PyTorch)
 │   ├── evaluation/
 │   │   ├── splits.py            # expanding-window walk-forward splitter
+│   │   ├── backtest.py          # fit per fold, collect forecasts, convert to FX levels
 │   │   ├── metrics.py           # RMSE, MAE, MAPE, MPE, hit rate, Theil's U
 │   │   └── stat_tests.py        # Diebold–Mariano, Clark–West
 │   ├── experiments/
 │   │   ├── eda.py               # M2: figures + diagnostics → results/eda/README.md
 │   │   ├── splits.py            # M3: fold tables + diagram → results/splits/README.md
-│   │   └── run.py               # orchestration: grid × horizons × folds → results/
+│   │   ├── tracking.py          # run folder: config, git commit, versions, data hashes
+│   │   └── run.py               # orchestration: models × schemes × horizons → results/<stage>/
 │   └── reporting/
 │       ├── tables.py            # DataFrame → Markdown
 │       └── plots.py             # matplotlib figures (one style for the whole report)
