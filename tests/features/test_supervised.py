@@ -67,6 +67,12 @@ def test_invalid_arguments(feats, bad):
         make_supervised(feats, "fx_only", **bad)
 
 
+def test_select_lags_rejects_zero():
+    from fxforecast.features.supervised import select_lags
+    with pytest.raises(ValueError):
+        select_lags(pd.DataFrame(columns=["dlog_fx_lag0"]), 0)
+
+
 def test_unknown_feature_set():
     with pytest.raises(ValueError):
         feature_columns("everything")

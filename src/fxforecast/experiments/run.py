@@ -29,6 +29,7 @@ from fxforecast.features.supervised import make_supervised
 from fxforecast.features.transforms import macro_differentials, relative_levels
 from fxforecast.models import Forecaster
 from fxforecast.models.baselines import AutoRegressive, Drift, RandomWalk
+from fxforecast.models.svr import SVRForecaster
 from fxforecast.models.var import VARForecaster, VECMForecaster
 from fxforecast.reporting.tables import to_markdown
 
@@ -59,6 +60,7 @@ def model_registry(cfg: dict, feats: pd.DataFrame, levels: pd.DataFrame) -> dict
         "ar": (lambda h: AutoRegressive(**m["ar"]), ["fx_only"]),
         "var": (lambda h: VARForecaster(feats, h, **m["var"]), ["fx_plus_macro"]),
         "vecm": (lambda h: VECMForecaster(levels, h, **m["vecm"]), ["fx_plus_macro"]),
+        "svr": (lambda h: SVRForecaster(h, **m["svr"]), ["fx_only", "fx_plus_macro"]),
     }
 
 

@@ -25,7 +25,8 @@ See **[docs/PLAN.md](docs/PLAN.md)** for the full plan, architecture and milesto
 | M3 Features and walk-forward splitter ([splits](results/splits/README.md)) | ✅ |
 | M4 Baselines and metrics ([results](results/baselines/README.md), [findings](docs/findings.md)) | ✅ |
 | M5 VAR and VECM ([results](results/var/README.md)) | ✅ |
-| M6–M7 SVR, LSTM | ⏳ |
+| M6 SVR ([results](results/svr/README.md)) | ✅ |
+| M7 LSTM | ⏳ |
 | M8 Full evaluation | ⏳ |
 | M9 Report | ⏳ |
 
@@ -44,6 +45,7 @@ python -m fxforecast.experiments.eda   # figures + diagnostics -> results/eda/RE
 python -m fxforecast.experiments.splits  # train/test folds -> results/splits/README.md
 python -m fxforecast.experiments.run --stage baselines --models random_walk drift ar
 python -m fxforecast.experiments.run --stage var --models drift ar var vecm
+python -m fxforecast.experiments.run --stage svr --models drift ar var svr   # ~12 min
 python -m pytest                       # run the test suite
 ```
 

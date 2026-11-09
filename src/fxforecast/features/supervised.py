@@ -33,6 +33,14 @@ def feature_columns(feature_set: str) -> list[str]:
     raise ValueError(f"Unknown feature set {feature_set!r}; expected one of {FEATURE_SETS}")
 
 
+def select_lags(X: pd.DataFrame, n_lags: int) -> pd.DataFrame:
+    """Keep columns ``<name>_lag<k>`` with k < n_lags (all base columns, fewer lags)."""
+    if n_lags < 1:
+        raise ValueError("n_lags must be >= 1")
+    keep = [c for c in X.columns if int(c.rsplit("_lag", 1)[1]) < n_lags]
+    return X[keep]
+
+
 def h_step_target(dlog_fx: pd.Series, horizon: int) -> pd.Series:
     """y_h(t) = sum of dlog_fx over t+1..t+h = log FX(t+h) - log FX(t)."""
     if horizon < 1:
