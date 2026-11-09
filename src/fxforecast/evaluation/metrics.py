@@ -10,6 +10,8 @@ Accuracy = 100 % - MAPE x 100 %.
 """
 from __future__ import annotations
 
+import json
+
 import numpy as np
 import pandas as pd
 
@@ -73,6 +75,27 @@ def summarize(preds: pd.DataFrame) -> dict[str, float]:
         "accuracy_pct": 100 * (1 - m),
         "hit_rate": hit_rate(preds["y_true"], preds["y_pred"]),
     }
+
+
+def member_spread(preds: pd.DataFrame, by: list[str]) -> pd.DataFrame:
+    """RMSE (INR) of each ensemble member separately, summarised as mean, std, min, max.
+
+    Uses the ``y_pred_members`` column (JSON list per row); groups without it are skipped.
+    """
+    if "y_pred_members" not in preds.columns:
+        return pd.DataFrame()
+    rows = {}
+    for key, g in preds.dropna(subset=["y_pred_members"]).groupby(by, sort=False):
+        members = np.array([json.loads(s) for s in g["y_pred_members"]])        # (rows, seeds)
+        fx_members = g["fx_origin"].to_numpy()[:, None] * np.exp(members)
+        scores = [rmse(g["fx_true"], fx_members[:, k]) for k in range(members.shape[1])]
+        rows[key] = {"seeds": len(scores), "rmse_mean": np.mean(scores), "rmse_std": np.std(scores, ddof=1),
+                     "rmse_min": np.min(scores), "rmse_max": np.max(scores), "rmse_ensemble": rmse(g["fx_true"], g["fx_pred"])}
+    table = pd.DataFrame(rows).T
+    if len(table):
+        table.index.names = by
+        table["seeds"] = table["seeds"].astype(int)
+    return table
 
 
 def metrics_table(preds: pd.DataFrame, by: list[str], benchmark: str = "random_walk") -> pd.DataFrame:
