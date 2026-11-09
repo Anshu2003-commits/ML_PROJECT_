@@ -110,3 +110,20 @@ The final run (all 7 models, one command, commit `f03748e`) reproduced every sta
 - **Removing IP growth *improves* the VAR at every horizon** (h=1: 1.055 → 0.980). That is the very variable that Granger-causes FX in-sample (M2), a clear case of in-sample significance not carrying over out-of-sample, likely because of COVID-era extremes.
 - **The interest-rate differential is the most useful variable at 1 month:** removing it worsens U from 1.055 to 1.088. Equity returns and reserves help a little at 1 month. Removing any single variable barely matters at 6 months.
 - These results are diagnostic only. Choosing a variable subset now, after seeing test results, would be tuning on the test set, so the main results keep all 7 variables.
+
+## Robustness: India's market interest rate instead of the policy-rate proxy ([results/final_rbi/analysis.md](../results/final_rbi/analysis.md))
+
+The whole evaluation was re-run with RBI's weighted average call money rate (DBIE) replacing FRED's India rate, which is really the RBI policy rate (D11, D36). Everything else is identical. FX-only models are unchanged, which confirms that only the rate input differs.
+
+| Walk-forward Theil's U (FX + macro) | h=1 policy → market | h=3 | h=6 |
+|---|---|---|---|
+| VAR | 1.055 → 1.078 | 0.986 → 0.988 | 0.929 → 0.940 |
+| VECM | 1.181 → 1.237 | 1.198 → 1.269 | 1.226 → 1.306 |
+| SVR | 0.990 → 0.990 | 0.961 → 0.994 | 1.035 → 0.997 |
+| LSTM | 1.000 → 0.984 | 1.019 → 0.968 | 0.905 → **0.900** |
+
+- **RQ1 conclusions unchanged:** still no model significantly beats the random walk or drift (best: LSTM + macro at h=6, U 0.900, DM p = 0.16 vs RW and 0.46 vs drift).
+- **RQ2 slightly stronger:** Clark–West is significant at 5% in **7 of 9** walk-forward cases (was 6 of 9). The LSTM benefits most (h=3: 1.019 → 0.968; CW p 0.39 → 0.09), and SVR at h=6 becomes significant (p 0.13 → 0.03). VAR and SVR h=1/3 stay significant.
+- **Diagnostics change:** the market-rate differential Granger-causes FX at lag 6 (p = 0.01), where the policy rate never did. Johansen now finds rank 3. The VECM becomes even less stable and is the only model clearly hurt (U up to 1.31).
+- **Publication lags:** still robust (LSTM h=6: 0.900 → 0.907 → 0.916).
+- **Take-away:** the choice of India interest-rate series changes individual numbers by up to about 0.05 in Theil's U, but not the answers to RQ1 or RQ2. The main results keep the FRED series, so they stay comparable with the base paper's variable definitions; this variant is reported as a robustness check.

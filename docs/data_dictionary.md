@@ -44,3 +44,13 @@ All data comes from FRED (Federal Reserve Bank of St. Louis) and is monthly. Raw
 
 ## Units warning for feature engineering
 Raw levels are **not comparable across countries**. For example, M3 is in USD for the US and INR for India, and the index base years differ. The paper's "USA − India" level differences are therefore not meaningful for money supply, trade or reserves. The feature step (M3) uses growth-rate differentials (Δlog) and rate differentials instead. See decision D3.
+
+## Robustness variant: India market interest rate (RBI)
+| Column | Source | Description | Units | Coverage |
+|---|---|---|---|---|
+| `rate_in` (variant) | RBI DBIE, *Weighted Average Call/Notice Money Rates* (monthly), file `data/raw/rbi/rbi_wacr_monthly_table.csv` | Weighted average call money rate, monthly average (includes notice money) | % p.a. | 1994-04 to 2026-09 (FY 1993-94 partial) |
+
+- **How it was retrieved:** RBI refuses automated downloads. The table was read from the DBIE report page in a browser on 2026-11-10 and written to CSV with empty cells preserved. Its SHA-256 is recorded in the `.meta.json` and checked by the tests.
+- **Cross-check:** every monthly value for 2020-21 to 2026-27 matches RBI's *Handbook of Statistics 2025-26*, Table 174 (PDF in the same folder, tested).
+- **How it differs from FRED:** the FRED series equals the market rate in only 1 of 346 months, and the two correlate at 0.58. The market rate spikes in liquidity squeezes (34.8% in Nov 1995, 28.7% in Jan 1998, 10.7% in Oct 2008) while the FRED series stays flat at 6% from 2003 to 2012.
+- **Used by:** `configs/experiment_rbi.yaml`, which builds `data/processed_rbi/panel.parquet`. Results are in `results/final_rbi/`.

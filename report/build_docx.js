@@ -13,7 +13,7 @@ const {
 const ROOT = process.argv[2];
 const OUT = process.argv[3];
 const REPORT_DIR = path.join(ROOT, "report");
-const GITHUB = "https://github.com/Anshu2003-commits/ML_PROJECT_/blob/v1.0/";
+const GITHUB = "https://github.com/Anshu2003-commits/ML_PROJECT_/blob/v1.2/";
 const FONT = "Calibri";
 const CONTENT_DXA = 11906 - 2 * 1440;  // A4 width minus 1" margins
 const INK = "1F1F1F", MUTED = "595959", HEAD_FILL = "E8EEF7", BORDER = "BFBFBF";
