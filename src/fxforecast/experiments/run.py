@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import shutil
 from pathlib import Path
 from typing import Callable
 
@@ -25,9 +26,10 @@ from fxforecast.evaluation.metrics import metrics_table
 from fxforecast.evaluation.splits import replication_folds, walk_forward_folds
 from fxforecast.experiments.tracking import Run
 from fxforecast.features.supervised import make_supervised
-from fxforecast.features.transforms import macro_differentials
+from fxforecast.features.transforms import macro_differentials, relative_levels
 from fxforecast.models import Forecaster
 from fxforecast.models.baselines import AutoRegressive, Drift, RandomWalk
+from fxforecast.models.var import VARForecaster, VECMForecaster
 from fxforecast.reporting.tables import to_markdown
 
 log = logging.getLogger("fxforecast.run")
@@ -41,13 +43,22 @@ PAPER = pd.DataFrame(
 )
 
 
-def model_registry(cfg: dict) -> dict[str, tuple[Callable[[], Forecaster], list[str]]]:
-    """name -> (factory, feature sets the model is run on)."""
+ModelFactory = Callable[[int], Forecaster]   # horizon -> fresh model
+
+
+def model_registry(cfg: dict, feats: pd.DataFrame, levels: pd.DataFrame) -> dict[str, tuple[ModelFactory, list[str]]]:
+    """name -> (factory taking the horizon, feature sets the model is run on).
+
+    VAR/VECM read the series tables directly (they guard against look-ahead themselves);
+    the feature set label records which information they use.
+    """
     m = cfg["models"]
     return {
-        "random_walk": (RandomWalk, ["fx_only"]),
-        "drift": (Drift, ["fx_only"]),
-        "ar": (lambda: AutoRegressive(**m["ar"]), ["fx_only"]),
+        "random_walk": (lambda h: RandomWalk(), ["fx_only"]),
+        "drift": (lambda h: Drift(), ["fx_only"]),
+        "ar": (lambda h: AutoRegressive(**m["ar"]), ["fx_only"]),
+        "var": (lambda h: VARForecaster(feats, h, **m["var"]), ["fx_plus_macro"]),
+        "vecm": (lambda h: VECMForecaster(levels, h, **m["vecm"]), ["fx_plus_macro"]),
     }
 
 
@@ -61,16 +72,18 @@ def _schemes(cfg: dict) -> list[tuple[str, int, Callable]]:
 
 
 def run(cfg: dict, stage: str, model_names: list[str], publication_lag: int = 0) -> tuple[pd.DataFrame, Run]:
-    registry = model_registry(cfg)
+    panel = pd.read_parquet(resolve_path(cfg["data"]["processed_dir"]) / "panel.parquet")
+    feats = macro_differentials(panel)
+    registry = model_registry(cfg, feats, relative_levels(panel))
     unknown = set(model_names) - set(registry)
     if unknown:
         raise ValueError(f"Unknown models {sorted(unknown)}; available: {sorted(registry)}")
+    if publication_lag and {"var", "vecm"} & set(model_names):
+        raise ValueError("publication lag is not implemented for var/vecm")
     if "random_walk" not in model_names:
         model_names = ["random_walk", *model_names]   # needed as the Theil's U benchmark
 
     tracker = Run(stage, cfg, resolve_path(cfg["data"]["raw_dir"]))
-    panel = pd.read_parquet(resolve_path(cfg["data"]["processed_dir"]) / "panel.parquet")
-    feats = macro_differentials(panel)
     n_lags = cfg["features"]["max_lags"]
     feature_sets = sorted({fs for name in model_names for fs in registry[name][1]})
 
@@ -86,12 +99,16 @@ def run(cfg: dict, stage: str, model_names: list[str], publication_lag: int = 0)
             factory, sets = registry[name]
             for fs in sets:
                 X, y = data[fs]
-                preds = attach_levels(backtest(factory, X.loc[common], y.loc[common], folds), panel["fx"], h)
+                preds = attach_levels(backtest(lambda: factory(h), X.loc[common], y.loc[common], folds),
+                                      panel["fx"], h)
                 all_preds.append(preds.assign(scheme=scheme, horizon=h, feature_set=fs, model=name))
                 log.info("%-12s h=%d %-13s %-12s %d forecasts", scheme, h, fs, name, len(preds))
 
     preds = pd.concat(all_preds, ignore_index=True)
     table = metrics_table(preds, GROUP)
+    choices = (preds.groupby(GROUP + ["refit_date"], sort=False)["model_info"].first()
+               .loc[lambda s: s != "{}"].rename("chosen_settings"))
+    choices.to_csv(tracker.dir / "model_choices.csv")
     preds.to_csv(tracker.dir / "predictions.csv", index=False)
     table.to_csv(tracker.dir / "metrics.csv")
     tracker.finish(models=model_names, publication_lag=publication_lag, n_forecasts=len(preds))
@@ -101,6 +118,7 @@ def run(cfg: dict, stage: str, model_names: list[str], publication_lag: int = 0)
 def write_report(table: pd.DataFrame, tracker: Run, out_dir: Path, models: list[str]) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
     table.to_csv(out_dir / "metrics.csv")
+    shutil.copyfile(tracker.dir / "model_choices.csv", out_dir / "model_choices.csv")
     cols = ["n", "rmse", "mae", "mape", "accuracy_pct", "hit_rate", "theil_u"]
     sections = []
     for (scheme, h), part in table.groupby(level=["scheme", "horizon"], sort=False):
@@ -112,6 +130,7 @@ Run `{tracker.run_id}`. Reproduce with `python -m fxforecast.experiments.run --s
 
 Level metrics are on INR per USD. **theil_u** = RMSE / RMSE(random walk) on the same origins (below 1 = beats "no change").
 **hit_rate** = share of correct up/down calls (undefined for the random walk, which never calls a direction).
+Settings each model chose on each refit (lag order, cointegration rank, ...) are in `model_choices.csv`.
 
 {chr(10).join(s + chr(10) for s in sections)}
 ### Base paper, for reference (replication period, h = 1, Bloomberg data)

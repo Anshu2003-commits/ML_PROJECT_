@@ -16,11 +16,11 @@ def test_baseline_run_end_to_end(tmp_path, monkeypatch):
     monkeypatch.setattr(Run, "root", tmp_path)
     cfg = load_config()
     cfg["experiments"]["walk_forward"]["horizons"] = [1]
-    table, tracker = runner.run(cfg, "smoke", ["drift"])
+    table, tracker = runner.run(cfg, "smoke", ["drift", "var", "vecm"])
 
     # random walk is added automatically as the benchmark
     models = set(table.index.get_level_values("model"))
-    assert models == {"random_walk", "drift"}
+    assert models == {"random_walk", "drift", "var", "vecm"}
     rep = table.xs("replication", level="scheme")
     assert set(rep["n"]) == {29}
     assert (table.xs("random_walk", level="model")["theil_u"] == 1.0).all()
@@ -31,7 +31,8 @@ def test_baseline_run_end_to_end(tmp_path, monkeypatch):
     info = json.loads((tracker.dir / "run.json").read_text(encoding="utf-8"))
     assert info["data_sha256"]["EXINUS"] and info["git_commit"]
 
-    report = runner.write_report(table, tracker, tmp_path / "report", ["drift"])
+    report = runner.write_report(table, tracker, tmp_path / "report", ["drift", "var", "vecm"])
+    assert (tmp_path / "report" / "model_choices.csv").exists()
     assert "Theil" in report.read_text(encoding="utf-8") or "theil_u" in report.read_text(encoding="utf-8")
 
 

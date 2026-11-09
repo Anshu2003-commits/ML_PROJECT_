@@ -22,11 +22,11 @@ from statsmodels.tsa.vector_ar.vecm import coint_johansen
 ALPHA = 0.05
 
 
-def _with_freq(df: pd.DataFrame) -> pd.DataFrame:
+def with_freq(df: pd.DataFrame) -> pd.DataFrame:
     """Attach the inferred frequency (e.g. monthly 'MS') so statsmodels does not have to guess."""
     df = df.dropna().copy()
     if isinstance(df.index, pd.DatetimeIndex) and df.index.freq is None and len(df) >= 3:
-        df.index.freq = pd.infer_freq(df.index)
+        df.index = pd.DatetimeIndex(df.index, freq="infer")
     return df
 
 
@@ -78,7 +78,7 @@ def granger_table(df: pd.DataFrame, target: str, lags: tuple[int, ...] = (1, 3, 
     """
     rows = {}
     for col in df.columns.drop(target):
-        pair = _with_freq(df[[target, col]])
+        pair = with_freq(df[[target, col]])
         rows[col] = {
             f"p_lag{p}": VAR(pair).fit(p).test_causality(target, [col], kind="f").pvalue
             for p in lags
@@ -88,7 +88,7 @@ def granger_table(df: pd.DataFrame, target: str, lags: tuple[int, ...] = (1, 3, 
 
 def var_lag_selection(df: pd.DataFrame, max_lags: int = 12) -> dict[str, int]:
     """Lag order chosen by AIC, BIC, HQIC and FPE for a VAR on all columns."""
-    return {k: int(v) for k, v in VAR(_with_freq(df)).select_order(max_lags).selected_orders.items()}
+    return {k: int(v) for k, v in VAR(with_freq(df)).select_order(max_lags).selected_orders.items()}
 
 
 def johansen_table(df: pd.DataFrame, k_ar_diff: int = 2, det_order: int = 0) -> tuple[pd.DataFrame, int]:

@@ -27,4 +27,21 @@ The data differ (FRED vs Bloomberg), but the gap is large and holds under both F
 - **Walk-forward 2010–2023 (156 forecasts):** AR does **not** beat RW at any horizon (U = 1.02 / 1.04 / 1.02 at h = 1 / 3 / 6). Its replication-window advantage does not generalise.
 - **Drift beats RW at every walk-forward horizon** (U = 0.98 / 0.96 / 0.92 at h = 1 / 3 / 6), and the gain grows with horizon. This reflects the rupee's steady long-run depreciation. Drift is therefore the strongest simple benchmark at longer horizons.
 
+## M5: VAR and VECM ([results/var](../results/var/README.md))
+
+Theil's U vs random walk (below 1 = beats "no change"):
+
+| | Replication h=1 | Walk-fwd h=1 | h=3 | h=6 |
+|---|---|---|---|---|
+| Drift (FX only) | 0.99 | **0.98** | **0.96** | **0.92** |
+| AR (FX only) | **0.89** | 1.02 | 1.04 | 1.02 |
+| VAR (FX + 7 macro differentials) | 0.97 | 1.06 | 0.99 | 0.93 |
+| VECM (FX + monetary-model levels) | 0.92 | 1.18 | 1.20 | 1.23 |
+
+- **Our VAR's replication RMSE is 0.92 INR vs the paper's 2.94.** With a proper stationarity treatment (differencing chosen by ADF on training data only) and FRED data, the econometric model is much stronger than the paper reports. The paper's "ML beats VAR" conclusion may partly reflect a weak VAR setup.
+- **RQ2, econometric family (AR = FX only vs VAR = FX + macro):** macro information **hurts at 1 month** (U 1.06 vs 1.02) but **helps at 3 and 6 months** (0.99 vs 1.04, and 0.93 vs 1.02). This fits the literature that fundamentals matter more at longer horizons (e.g. Mark, 1995). Significance is still to be tested (M8).
+- **Neither VAR nor VECM beats drift** in the walk-forward evaluation. The rupee's steady trend is still the hardest thing to beat.
+- **VECM is unstable:** the Johansen rank chosen at each refit varies (rank 0 in 2 folds, 1 in 8, 2 in 3). It is the worst model out-of-sample (U 1.18 to 1.23), even though it looks good on the paper's short window (0.92). The long-run relationship is not stable enough to forecast with.
+- **VAR settings:** AIC picks 1 lag on every refit. Most macro differentials are differenced; which ones varies slightly by fold (`model_choices.csv`).
+
 **Implication for RQ1/RQ2:** a multivariate model must beat both the random walk *and* drift to show that macro information helps. Any claim of an improvement needs a significance test (M8), because 29 test months is a small sample.

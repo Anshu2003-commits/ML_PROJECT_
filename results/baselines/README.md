@@ -1,9 +1,10 @@
 # Results: baselines
 
-Run `baselines-20261109T161022Z-0c396fe9`. Reproduce with `python -m fxforecast.experiments.run --stage baselines --models random_walk drift ar`.
+Run `baselines-20261109T161543Z-79713761`. Reproduce with `python -m fxforecast.experiments.run --stage baselines --models random_walk drift ar`.
 
 Level metrics are on INR per USD. **theil_u** = RMSE / RMSE(random walk) on the same origins (below 1 = beats "no change").
 **hit_rate** = share of correct up/down calls (undefined for the random walk, which never calls a direction).
+Settings each model chose on each refit (lag order, cointegration rank, ...) are in `model_choices.csv`.
 
 ### Replication, h = 1 month(s)
 
