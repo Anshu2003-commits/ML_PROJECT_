@@ -1,14 +1,17 @@
-# Draft experiment config. Every date, horizon and grid value lives here, not in code.
-# FRED IDs are provisional until the M1 fetch/validate step confirms their coverage.
+# Experiment config. Every date, horizon and grid value lives here, not in code.
+# Series coverage was checked on FRED on 2026-11-09 (see docs/data_dictionary.md).
 
 data:
-  start: 1994-04-01
+  raw_dir: data/raw
+  processed_dir: data/processed
+  start: 1994-04-01           # first month of the panel (same as the base paper)
+  end: null                   # null = last month where every series has data
   target: EXINUS              # INR per USD, monthly average
-  series:
+  series:                     # variable -> FRED ID per country
     cpi:      {us: CPIAUCSL,        in: INDCPIALLMINMEI}
-    ip:       {us: INDPRO,          in: INDPROINDMISMEI}
+    ip:       {us: INDPRO,          in: INDPROINDMISMEI}   # India IP ends 2023-01 (binding constraint)
     rate:     {us: FEDFUNDS,        in: IRSTCI01INM156N}
-    m3:       {us: MABMM301USM189S, in: MABMM301INM189S}
+    m3:       {us: MABMM301USM189S, in: MABMM301INM189N}   # India: NSA series (SA version ends 2018-12)
     reserves: {us: TRESEGUSM052N,   in: TRESEGINM052N}
     equity:   {us: SPASTT01USM661N, in: SPASTT01INM661N}
     exports:  {us: XTEXVA01USM667S, in: XTEXVA01INM667S}

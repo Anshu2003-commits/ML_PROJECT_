@@ -1,0 +1,9 @@
+{
+  "series_id": "SPASTT01USM661N",
+  "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SPASTT01USM661N",
+  "fetched_at_utc": "2026-11-09T15:46:28+00:00",
+  "sha256": "684e6be3267f49d2e20b4ca41d0a43b1c85c390c210e4bdab97d4cc600767940",
+  "n_obs": 837,
+  "first": "1957-01-01",
+  "last": "2026-09-01"
+}

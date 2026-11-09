@@ -1,0 +1,9 @@
+{
+  "series_id": "INDPRO",
+  "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=INDPRO",
+  "fetched_at_utc": "2026-11-09T15:46:27+00:00",
+  "sha256": "0fc53a503386efaf83f17cf0cc6d77b3980830a91c9dfa9ebab97b4cf1aa5feb",
+  "n_obs": 1293,
+  "first": "1919-01-01",
+  "last": "2026-09-01"
+}

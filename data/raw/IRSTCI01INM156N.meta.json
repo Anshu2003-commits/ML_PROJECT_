@@ -1,0 +1,9 @@
+{
+  "series_id": "IRSTCI01INM156N",
+  "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=IRSTCI01INM156N",
+  "fetched_at_utc": "2026-11-09T15:46:27+00:00",
+  "sha256": "d984f2732f13fd89fcbacdc6ed75b60bb418ecd589d3d6fa9524e3e1896739fa",
+  "n_obs": 705,
+  "first": "1968-01-01",
+  "last": "2026-09-01"
+}

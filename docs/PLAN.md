@@ -97,6 +97,8 @@ The template's Know / Act / Remember / Coordinate map onto an ML pipeline like t
 
 ### 2.1 Data dictionary (FRED, monthly)
 
+> **Update (M1, 2026-11-09):** the verified list, coverage and substitutions are in [`data_dictionary.md`](data_dictionary.md). The final panel covers 1994-04 to 2023-01 (346 months), limited by India IP. India M3 uses the non-SA series `MABMM301INM189N`. The table below is the original provisional list.
+
 FRED's `SP500` series only covers the last ~10 years, and US M3 was discontinued in 2006. The OECD-harmonised series (`...MEI`, `MABMM301...`, `SPASTT01...`) give **like-for-like definitions across both countries**, which is better for differentials. **All IDs must be confirmed by the fetch step**: some OECD/IMF series on FRED have been discontinued or stopped updating, and the validation step will report actual coverage.
 
 | Variable | India (FRED ID) | USA (FRED ID) | Feature built |
@@ -185,7 +187,9 @@ ML_PROJECT_/
 │   ├── config.py                # load and validate YAML config
 │   ├── data/
 │   │   ├── fetch.py             # I/O: download + cache + metadata
-│   │   └── validate.py          # schema / coverage / frequency checks
+│   │   ├── validate.py          # schema / coverage / frequency checks
+│   │   ├── panel.py             # align series into one monthly panel
+│   │   └── __main__.py          # CLI: python -m fxforecast.data [--refresh]
 │   ├── features/
 │   │   ├── transforms.py        # log-diff, differentials, lags, FX-only vs macro sets
 │   │   └── diagnostics.py       # ADF, KPSS, Granger, Johansen, correlation
