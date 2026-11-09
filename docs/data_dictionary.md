@@ -33,6 +33,7 @@ All data comes from FRED (Federal Reserve Bank of St. Louis) and is monthly. Raw
 - **India M3:** the seasonally adjusted series `MABMM301INM189S` ends 2018-12, so the non-adjusted series is used instead (decision D9).
 - **US M3:** the Federal Reserve stopped publishing M3 in 2006. The OECD-constructed series used here continues to 2023-11.
 - **S&P 500:** FRED's `SP500` only covers about 10 years, so the OECD share price index is used for both countries for like-for-like definitions.
+- **India interest rate:** `IRSTCI01INM156N` is effectively the RBI administered/policy rate. It equals `IRSTCB01INM156N` in 346 of 349 months and is flat at 6% from 2003 to 2012. It is kept as a policy-rate proxy (decision D11).
 - **Not used:** `DEXINUS` (daily FX rate). `EXINUS` is already its monthly average.
 
 ## Test periods this data supports

@@ -203,10 +203,11 @@ ML_PROJECT_/
 │   │   ├── metrics.py           # RMSE, MAE, MAPE, MPE, hit rate, Theil's U
 │   │   └── stat_tests.py        # Diebold–Mariano, Clark–West
 │   ├── experiments/
+│   │   ├── eda.py               # M2: figures + diagnostics → results/eda/README.md
 │   │   └── run.py               # orchestration: grid × horizons × folds → results/
 │   └── reporting/
-│       ├── tables.py
-│       └── plots.py
+│       ├── tables.py            # DataFrame → Markdown
+│       └── plots.py             # matplotlib figures (one style for the whole report)
 ├── notebooks/                   # EDA + final figures; import from src only
 ├── tests/                       # mirrors src/
 └── results/                     # run outputs (git-ignored except final summary tables)
