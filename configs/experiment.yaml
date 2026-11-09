@@ -40,10 +40,13 @@ models:
   ar: {max_lag: 12, criterion: aic}
   var: {max_lag: 6, criterion: aic}
   vecm: {max_lag: 6, deterministic: co, signif: 0.05}
-  svr:
-    C: [1, 10, 100, 1000]
-    gamma: [0.0001, 0.001, 0.01]
-    epsilon: [0.001, 0.01, 0.1]
+  svr:                        # grid searched inside each training window (TimeSeriesSplit)
+    n_lags: [1, 3, 6]
+    # widened after grid v1 put gamma at its lowest value in 50/80 fits (see decision D29)
+    C: [0.1, 1, 10, 100, 1000, 10000]
+    gamma: [0.0001, 0.001, 0.01, 0.1]  # on standardised inputs; the paper's best was C=1000, gamma=0.001
+    epsilon: [0.05, 0.1, 0.5]  # in standard deviations of the (standardised) target
+    cv_splits: 5
   lstm:
     lookback: [6, 12]
     hidden_units: [16, 32]

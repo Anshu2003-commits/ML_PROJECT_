@@ -44,4 +44,21 @@ Theil's U vs random walk (below 1 = beats "no change"):
 - **VECM is unstable:** the Johansen rank chosen at each refit varies (rank 0 in 2 folds, 1 in 8, 2 in 3). It is the worst model out-of-sample (U 1.18 to 1.23), even though it looks good on the paper's short window (0.92). The long-run relationship is not stable enough to forecast with.
 - **VAR settings:** AIC picks 1 lag on every refit. Most macro differentials are differenced; which ones varies slightly by fold (`model_choices.csv`).
 
+## M6: SVR ([results/svr](../results/svr/README.md))
+
+Theil's U vs random walk (below 1 = beats "no change"):
+
+| | Replication h=1 | Walk-fwd h=1 | h=3 | h=6 |
+|---|---|---|---|---|
+| Drift (FX only) | 0.99 | **0.98** | **0.96** | **0.92** |
+| SVR, FX only | 0.92 | 1.01 | 0.99 | 0.96 |
+| SVR, FX + macro | 1.10 | 0.99 | 0.96 | 1.03 |
+| VAR, FX + macro | 0.97 | 1.06 | 0.99 | 0.93 |
+
+- **Replication:** our FX-only SVR has RMSE 0.87 INR vs the paper's SVM 2.56. Adding macro data makes it **worse** (RMSE 1.04, U 1.10).
+- **RQ2, ML family (SVR FX only vs SVR FX + macro):** macro data helps a little at 1 and 3 months (U 1.01 → 0.99, and 0.99 → 0.96) and hurts at 6 months (0.96 → 1.03). That is the opposite horizon pattern from the VAR. No consistent benefit; significance tests come in M8.
+- **RQ1 so far:** in the walk-forward test the best multivariate model differs by horizon: SVR+macro at 1 and 3 months, VAR at 6 months. None beats drift, although SVR+macro at 3 months (0.961) is close to drift (0.956).
+- **The SVR prefers an almost linear fit.** Inner-CV tuning chose the smallest gamma in 50 of 80 fits on grid v1 and 30 of 80 on the widened grid. Widening the grid (gamma down to 0.0001, C up to 10000) changed Theil's U by at most 0.006, so the results are not sensitive to the grid. There is little nonlinear structure for the RBF kernel to exploit at monthly frequency.
+- **Cost:** the full SVR stage (2 feature sets, 4 scheme/horizon cases, 216-point grid × 5 inner splits per refit) takes about 12 minutes on a laptop CPU. VAR takes seconds.
+
 **Implication for RQ1/RQ2:** a multivariate model must beat both the random walk *and* drift to show that macro information helps. Any claim of an improvement needs a significance test (M8), because 29 test months is a small sample.
