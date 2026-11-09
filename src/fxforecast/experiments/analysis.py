@@ -179,15 +179,23 @@ def var_ablation(cfg: dict) -> pd.DataFrame:
     return table
 
 
-def run(cfg: dict, out_dir: Path) -> Path:
-    final_dir = latest_run("final")
+def compare_runs(base: pd.DataFrame, alt: pd.DataFrame, base_label: str, alt_label: str) -> pd.DataFrame:
+    """Theil's U of every model in two runs of the same design (e.g. two data variants)."""
+    out = pd.concat({base_label: vs_benchmarks(base)["theil_u"], alt_label: vs_benchmarks(alt)["theil_u"]}, axis=1)
+    out["change"] = out[alt_label] - out[base_label]
+    return out
+
+
+def run(cfg: dict, out_dir: Path, suffix: str = "", compare_to: str | None = None) -> Path:
+    """``suffix`` selects a variant's runs (stages final<suffix>, publag1<suffix>, ...)."""
+    final_dir = latest_run(f"final{suffix}")
     final = load_predictions(final_dir)
     lagged = {}
     for lag in (1, 2):
         try:
-            lagged[lag] = load_predictions(latest_run(f"publag{lag}"))
+            lagged[lag] = load_predictions(latest_run(f"publag{lag}{suffix}"))
         except FileNotFoundError:
-            log.warning("no publag%d run found; skipping that column", lag)
+            log.warning("no publag%d%s run found; skipping that column", lag, suffix)
 
     tables = {
         "vs_benchmarks": vs_benchmarks(final),
@@ -197,6 +205,24 @@ def run(cfg: dict, out_dir: Path) -> Path:
         "publication_lag": publication_lag(final, lagged),
         "var_ablation": var_ablation(cfg),
     }
+    comparison_md = ""
+    if compare_to is not None:
+        base = load_predictions(latest_run(f"final{compare_to}"))
+        base_name, alt_name = f"final{compare_to}", f"final{suffix}"
+        tables["comparison"] = compare_runs(base, final, base_name, alt_name)
+        tables["comparison_macro_value"] = pd.concat(
+            {base_name: macro_value(base)[["theil_u_fx_macro", "cw_p_one_sided"]],
+             alt_name: macro_value(final)[["theil_u_fx_macro", "cw_p_one_sided"]]}, axis=1)
+        tables["comparison_macro_value"].columns = [f"{a}: {b}" for a, b in tables["comparison_macro_value"].columns]
+        comparison_md = f"""
+## Comparison with `{base_name}` (Theil's U; change = this run minus {base_name})
+FX-only models do not use the changed data, so their rows should show no change.
+
+{to_markdown(tables['comparison'], 3)}
+
+### RQ2 tests under both data versions (FX + macro model's Theil's U and Clark–West p)
+{to_markdown(tables['comparison_macro_value'], 3)}
+"""
     out_dir.mkdir(parents=True, exist_ok=True)
     for name, t in tables.items():
         t.to_csv(out_dir / f"{name}.csv")
@@ -233,7 +259,7 @@ Lag k means the macro inputs at origin t are the values for month t-k (FX itself
 Higher than the "none" row = that variable was helping.
 
 {to_markdown(tables['var_ablation'], 3)}
-"""
+{comparison_md}"""
     report = out_dir / "analysis.md"
     report.write_text(md, encoding="utf-8")
     return report
@@ -242,10 +268,14 @@ Higher than the "none" row = that variable was helping.
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--config", default=str(DEFAULT_CONFIG))
-    parser.add_argument("--out", default=str(PROJECT_ROOT / "results" / "final"))
+    parser.add_argument("--suffix", default="", help="variant suffix of the stage names, e.g. _rbi")
+    parser.add_argument("--compare-to", default=None,
+                        help="suffix of another variant to compare with ('' = the main run)")
+    parser.add_argument("--out", default=None, help="default: results/final<suffix>")
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
-    print(run(load_config(args.config), Path(args.out)))
+    out = Path(args.out) if args.out else PROJECT_ROOT / "results" / f"final{args.suffix}"
+    print(run(load_config(args.config), out, args.suffix, args.compare_to))
 
 
 if __name__ == "__main__":

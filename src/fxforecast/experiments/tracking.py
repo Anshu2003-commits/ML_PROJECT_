@@ -48,7 +48,7 @@ def _versions() -> dict[str, str]:
 
 def _data_hashes(raw_dir: Path) -> dict[str, str]:
     return {p.stem.replace(".meta", ""): json.loads(p.read_text(encoding="utf-8"))["sha256"][:12]
-            for p in sorted(raw_dir.glob("*.meta.json"))}
+            for p in sorted(raw_dir.rglob("*.meta.json"))}
 
 
 @dataclass

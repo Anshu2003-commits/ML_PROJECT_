@@ -1,0 +1,9 @@
+# Robustness variant: India's interest rate = RBI weighted average call money rate (market rate)
+# instead of FRED IRSTCI01INM156N (which is the RBI policy rate; see decision D11).
+# Everything else is inherited from experiment.yaml.
+base: experiment.yaml
+
+data:
+  processed_dir: data/processed_rbi
+  series:
+    rate: {us: FEDFUNDS, in: RBI_WACR}

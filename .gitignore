@@ -19,3 +19,4 @@ results/runs/
 Thumbs.db
 .vscode/
 .idea/
+data/processed_rbi/

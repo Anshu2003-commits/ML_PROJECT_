@@ -1,0 +1,12 @@
+{
+  "series_id": "RBI_WACR",
+  "description": "Weighted Average Call/Notice Money Rates, monthly (per cent per annum); High, Low and Average rows per fiscal year (April-March)",
+  "publisher": "Reserve Bank of India, Database on Indian Economy (DBIE)",
+  "url": "https://data.rbi.org.in/#/dbie/reports/Statistics/Financial%20Market/Money%20Market",
+  "report": "Statistics > Financial Market > Money Market > Weighted Average Call/Notice Money Rates (Monthly, 30-Apr-1991 to 30-Sep-2026), SAP Web Intelligence report 'Weighted Average Call Money Rates'",
+  "retrieved_utc": "2026-11-10",
+  "method": "Table cells read from the rendered DBIE report in a browser and written to CSV with empty cells preserved; SHA-256 of the CSV computed in the browser and verified after saving",
+  "sha256": "7c354ddcbf2685485f41e0d7c2b89ca73e6939cbebab5455c07b1184a8bd4618",
+  "cross_check": "rbi_handbook_2025-26_table174.pdf (Handbook of Statistics on the Indian Economy 2025-26, Table 174) covers 2020-21 to 2026-27; values must match (tested)",
+  "notes": "Includes notice money. The model uses the 'Average' row; fiscal year YYYY-YY maps Apr-Dec to YYYY and Jan-Mar to YYYY+1."
+}

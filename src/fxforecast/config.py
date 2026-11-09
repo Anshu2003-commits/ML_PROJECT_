@@ -21,14 +21,33 @@ class ConfigError(ValueError):
 
 
 def load_config(path: str | Path = DEFAULT_CONFIG) -> dict[str, Any]:
-    """Read the YAML config and check the fields the pipeline depends on."""
-    path = Path(path)
-    if not path.is_file():
-        raise ConfigError(f"Config file not found: {path}")
-    with path.open(encoding="utf-8") as fh:
-        cfg = yaml.safe_load(fh) or {}
+    """Read the YAML config and check the fields the pipeline depends on.
+
+    A config may start with ``base: <other.yaml>`` (relative to its own folder):
+    the base is loaded first and this file's values override it key by key.
+    """
+    cfg = _read(Path(path), seen=set())
     _validate(cfg)
     return cfg
+
+
+def _read(path: Path, seen: set[Path]) -> dict[str, Any]:
+    if not path.is_file():
+        raise ConfigError(f"Config file not found: {path}")
+    if path.resolve() in seen:
+        raise ConfigError(f"Circular 'base' reference at {path}")
+    seen.add(path.resolve())
+    with path.open(encoding="utf-8") as fh:
+        cfg = yaml.safe_load(fh) or {}
+    base = cfg.pop("base", None)
+    return _merge(_read(path.parent / base, seen), cfg) if base else cfg
+
+
+def _merge(base: dict, override: dict) -> dict:
+    out = dict(base)
+    for key, value in override.items():
+        out[key] = _merge(out[key], value) if isinstance(value, dict) and isinstance(out.get(key), dict) else value
+    return out
 
 
 def _validate(cfg: dict[str, Any]) -> None:
