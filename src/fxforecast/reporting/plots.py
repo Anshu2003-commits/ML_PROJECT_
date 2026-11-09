@@ -93,6 +93,109 @@ def correlation_heatmap(df: pd.DataFrame, path: Path, *, title: str) -> Path:
     return _save(fig, path)
 
 
+# Categorical slots in fixed order (validated: scripts/validate_palette.js). Two pairs sit in the
+# 6-8 CVD band, so every series also gets its own line style / marker and a direct label.
+CATEGORICAL = ["#2a78d6", "#eb6834", "#1baf7a", "#e87ba4"]
+LINESTYLES = ["-", "--", "-.", ":"]
+MARKERS = ["o", "s", "^", "D"]
+
+
+def forecast_paths(actual: pd.Series, forecasts: dict[str, pd.Series], path: Path, *, title: str) -> Path:
+    """Actual series in ink plus up to four forecast series, each with its own colour and line style.
+
+    Forecast lines end close together, so identity comes from the legend + line style, not end labels.
+    """
+    if len(forecasts) > len(CATEGORICAL):
+        raise ValueError(f"At most {len(CATEGORICAL)} forecast series")
+    fig, ax = plt.subplots(figsize=(9, 4))
+    ax.plot(actual.index, actual, color=INK, lw=2.2, label="actual", zorder=5)
+    for i, (name, s) in enumerate(forecasts.items()):
+        ax.plot(s.index, s, color=CATEGORICAL[i], ls=LINESTYLES[i], lw=1.5, label=name, zorder=3)
+    ax.set_ylabel("INR per USD")
+    ax.legend(frameon=False, fontsize=7, ncol=len(forecasts) + 1, loc="upper left")
+    ax.set_title(title, loc="left", fontsize=10)
+    fig.tight_layout()
+    return _save(fig, path)
+
+
+def theil_u_dots(table: pd.DataFrame, path: Path, *, title: str, reference: dict[str, float] | None = None) -> Path:
+    """Small multiples by column (e.g. horizon): one row per model, one dot per feature set.
+
+    ``table`` index = (model, feature_set), columns = panels; values = Theil's U.
+    A vertical line at 1 marks the random walk; ``reference`` adds a dashed line per panel (e.g. drift).
+    """
+    models = list(dict.fromkeys(table.index.get_level_values(0)))
+    sets = list(dict.fromkeys(table.index.get_level_values(1)))
+    fig, axes = plt.subplots(1, table.shape[1], figsize=(3.0 * table.shape[1] + 1, 0.42 * len(models) + 1.4),
+                             sharey=True, squeeze=False)
+    lo, hi = np.nanmin(table.to_numpy()), np.nanmax(table.to_numpy())
+    for ax, col in zip(axes[0], table.columns):
+        ax.axvline(1.0, color=AXIS, lw=1.2, zorder=1)
+        if reference and col in reference:
+            ax.axvline(reference[col], color=INK_2, lw=1, ls="--", zorder=1)
+        for j, fs in enumerate(sets):
+            ys, xs = [], []
+            for i, m in enumerate(models):
+                if (m, fs) in table.index and not np.isnan(table.loc[(m, fs), col]):
+                    ys.append(i)
+                    xs.append(table.loc[(m, fs), col])
+            ax.scatter(xs, ys, s=46, color=CATEGORICAL[j], marker=MARKERS[j], label=fs, zorder=3,
+                       edgecolors=SURFACE, linewidths=1.5)
+        ax.set_title(str(col), loc="left")
+        ax.set_xlim(lo - 0.03, hi + 0.03)
+        ax.grid(axis="y", visible=False)
+    axes[0][0].set_yticks(range(len(models)), models)
+    axes[0][0].invert_yaxis()
+    axes[0][-1].legend(frameon=False, fontsize=7, loc="lower right")
+    note = "solid line: random walk (U = 1)" + ("; dashed: drift" if reference else "") + "; left of the line = better"
+    fig.suptitle(f"{title}\n{note}", x=0.01, ha="left", fontsize=10, color=INK, fontweight="bold")
+    fig.tight_layout()
+    return _save(fig, path)
+
+
+def ratio_heatmap(table: pd.DataFrame, path: Path, *, title: str, center: float = 1.0, span: float = 0.4) -> Path:
+    """Heatmap of ratios (e.g. Theil's U) on a diverging scale centred at ``center``; values printed."""
+    k_rows, k_cols = table.shape
+    fig, ax = plt.subplots(figsize=(1.3 * k_cols + 3.2, 0.36 * k_rows + 1.3))
+    im = ax.imshow(table.to_numpy(dtype=float), cmap=DIVERGING, vmin=center - span, vmax=center + span, aspect="auto")
+    ax.set_xticks(range(k_cols), table.columns)
+    ax.set_yticks(range(k_rows), [" / ".join(map(str, i)) if isinstance(i, tuple) else str(i) for i in table.index])
+    ax.grid(False)
+    for i in range(k_rows):
+        for j in range(k_cols):
+            ax.text(j, i, f"{table.iat[i, j]:.2f}", ha="center", va="center", fontsize=7, color=INK)
+    cbar = fig.colorbar(im, ax=ax, fraction=0.04, pad=0.02)
+    cbar.outline.set_visible(False)
+    cbar.ax.tick_params(labelsize=7, colors=MUTED)
+    ax.set_title(title, loc="left", fontsize=10)
+    fig.tight_layout()
+    return _save(fig, path)
+
+
+def grouped_bars(table: pd.DataFrame, path: Path, *, title: str, ylabel: str) -> Path:
+    """Bars per index category, one bar per column (max 4 columns), values printed above bars."""
+    k, m = table.shape
+    if m > len(CATEGORICAL):
+        raise ValueError(f"At most {len(CATEGORICAL)} columns")
+    width = 0.8 / m
+    fig, ax = plt.subplots(figsize=(1.4 * k + 2, 3.4))
+    for j, col in enumerate(table.columns):
+        xs = np.arange(k) + (j - (m - 1) / 2) * width
+        vals = table[col].to_numpy(dtype=float)
+        ax.bar(xs, vals, width=width - 0.03, color=CATEGORICAL[j], label=col, zorder=2,
+               hatch=None if j == 0 else "//", edgecolor=SURFACE, linewidth=0)
+        for x, v in zip(xs, vals):
+            if not np.isnan(v):
+                ax.text(x, v, f"{v:.2f}", ha="center", va="bottom", fontsize=7, color=INK_2)
+    ax.set_xticks(range(k), table.index)
+    ax.set_ylabel(ylabel)
+    ax.grid(axis="x", visible=False)
+    ax.legend(frameon=False, fontsize=8)
+    ax.set_title(title, loc="left", fontsize=10)
+    fig.tight_layout()
+    return _save(fig, path)
+
+
 def fold_diagram(folds, path: Path, *, title: str) -> Path:
     """One row per fold: training span (muted) and test span (series colour)."""
     fig, ax = plt.subplots(figsize=(8, 0.28 * len(folds) + 1.2))
