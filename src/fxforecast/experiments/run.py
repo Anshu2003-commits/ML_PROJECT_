@@ -75,7 +75,8 @@ def _schemes(cfg: dict) -> list[tuple[str, int, Callable]]:
     return out
 
 
-def run(cfg: dict, stage: str, model_names: list[str], publication_lag: int = 0) -> tuple[pd.DataFrame, Run]:
+def run(cfg: dict, stage: str, model_names: list[str], publication_lag: int = 0,
+        only_feature_sets: list[str] | None = None) -> tuple[pd.DataFrame, Run]:
     panel = pd.read_parquet(resolve_path(cfg["data"]["processed_dir"]) / "panel.parquet")
     feats = macro_differentials(panel)
     registry = model_registry(cfg, feats, relative_levels(panel))
@@ -101,6 +102,8 @@ def run(cfg: dict, stage: str, model_names: list[str], publication_lag: int = 0)
         folds = make_folds(common, h)
         for name in model_names:
             factory, sets = registry[name]
+            if only_feature_sets and name != "random_walk":     # the benchmark always runs
+                sets = [fs for fs in sets if fs in only_feature_sets]
             for fs in sets:
                 X, y = data[fs]
                 preds = attach_levels(backtest(lambda: factory(h), X.loc[common], y.loc[common], folds),
@@ -118,7 +121,8 @@ def run(cfg: dict, stage: str, model_names: list[str], publication_lag: int = 0)
         spread.to_csv(tracker.dir / "seed_spread.csv")
     preds.to_csv(tracker.dir / "predictions.csv", index=False)
     table.to_csv(tracker.dir / "metrics.csv")
-    tracker.finish(models=model_names, publication_lag=publication_lag, n_forecasts=len(preds))
+    tracker.finish(models=model_names, publication_lag=publication_lag, feature_sets=only_feature_sets,
+                   n_forecasts=len(preds))
     return table, tracker
 
 
@@ -162,10 +166,12 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--stage", required=True, help="name for the results folder, e.g. baselines")
     parser.add_argument("--models", nargs="+", required=True)
     parser.add_argument("--publication-lag", type=int, default=0)
+    parser.add_argument("--feature-sets", nargs="+", default=None,
+                        help="restrict models to these feature sets (the random-walk benchmark always runs)")
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     cfg = load_config(args.config)
-    table, tracker = run(cfg, args.stage, args.models, args.publication_lag)
+    table, tracker = run(cfg, args.stage, args.models, args.publication_lag, args.feature_sets)
     print(write_report(table, tracker, PROJECT_ROOT / "results" / args.stage, args.models))
 
 
