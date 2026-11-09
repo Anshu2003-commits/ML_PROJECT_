@@ -66,7 +66,7 @@ Every model receives the same rows (12 lags built) and therefore forecasts exact
 ### 4.2 Evaluation design
 - **Replication split:** fit with data up to 2016-07, forecast targets 2016-08 to 2018-12 (29 months, as in the paper).
 - **Walk-forward (main):** an expanding window refit every January from 2010 to 2022 (13 refits), forecasting every month until the next refit. This gives 156 forecasts at *h* = 1, 154 at *h* = 3 and 151 at *h* = 6, with targets up to 2023-01.
-- **Leakage control:** at a refit date *T*, models train only on origins with *t* + *h* ≤ *T* (an *h*-month embargo, since overlapping targets would otherwise leak). All scaling, differencing decisions, lag selection, cointegration ranks, hyperparameter tuning and early stopping use the training window only. Tests check each of these rules (Section 8).
+- **Leakage control:** at a refit date *T*, models train only on origins with *t* + *h* ≤ *T* (an *h*-month embargo, since overlapping targets would otherwise leak). All scaling, differencing decisions, lag selection, cointegration ranks, hyperparameter tuning and early stopping use the training window only. Automated tests check each of these rules (Appendix B).
 
 ### 4.3 Models
 

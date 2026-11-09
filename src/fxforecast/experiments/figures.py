@@ -61,7 +61,7 @@ def run(out_dir: Path) -> list[Path]:
     order = [(mo, fs) for mo in MODEL_ORDER for fs in SET_LABEL.values() if (mo, fs) in table.index]
     table = table.loc[order, ["replication h=1", "walk-forward h=1", "walk-forward h=3", "walk-forward h=6"]]
     drift = table.xs("drift", level="model").iloc[0].to_dict()
-    paths.append(plots.theil_u_dots(table, fig_dir / "theil_u.png", reference=drift,
+    paths.append(plots.theil_u_dots(table, fig_dir / "theil_u.png", reference=drift, ncols=2,
                                     title="Theil's U by model, information set and horizon"))
 
     # 4. sub-periods heatmap (h = 1 and 6)
