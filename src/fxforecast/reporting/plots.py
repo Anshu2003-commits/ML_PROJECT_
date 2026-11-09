@@ -93,6 +93,22 @@ def correlation_heatmap(df: pd.DataFrame, path: Path, *, title: str) -> Path:
     return _save(fig, path)
 
 
+def fold_diagram(folds, path: Path, *, title: str) -> Path:
+    """One row per fold: training span (muted) and test span (series colour)."""
+    fig, ax = plt.subplots(figsize=(8, 0.28 * len(folds) + 1.2))
+    for i, f in enumerate(folds):
+        y = len(folds) - i
+        ax.barh(y, f.train[-1] - f.train[0], left=f.train[0], height=0.6, color=AXIS, lw=0)
+        ax.barh(y, (f.test[-1] - f.test[0]) + pd.Timedelta(days=28), left=f.test[0], height=0.6,
+                color=SERIES, lw=0)
+    ax.set_yticks([len(folds) - i for i in range(len(folds))],
+                  [f"refit {f.refit_date:%Y-%m}" for f in folds])
+    ax.grid(axis="y", visible=False)
+    ax.set_title(f"{title}  (grey: train origins, blue: test origins)", loc="left", fontsize=10)
+    fig.tight_layout()
+    return _save(fig, path)
+
+
 def acf_plot(series: pd.Series, path: Path, *, title: str, nlags: int = 24) -> Path:
     """Autocorrelation bars with a 95 % band (±1.96/√n) for 'no autocorrelation'."""
     x = series.dropna()
