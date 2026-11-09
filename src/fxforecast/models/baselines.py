@@ -71,3 +71,6 @@ class AutoRegressive:
 
     def predict(self, X: pd.DataFrame) -> np.ndarray:
         return self._design(X, self.p_) @ self.coef_
+
+    def info(self) -> dict:
+        return {"p": int(self.p_)}

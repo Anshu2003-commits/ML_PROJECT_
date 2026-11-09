@@ -5,6 +5,7 @@ into the next except through the (expanding) training data itself.
 """
 from __future__ import annotations
 
+import json
 import logging
 import time
 from typing import Callable
@@ -26,7 +27,8 @@ def backtest(
 ) -> pd.DataFrame:
     """Fit on each fold's train rows, predict its test rows.
 
-    Returns one row per test origin: origin, refit_date, y_true, y_pred, fit_seconds.
+    Returns one row per test origin: origin, refit_date, y_true, y_pred, fit_seconds,
+    model_info (JSON of settings the model chose on that fold, e.g. lag order).
     """
     if not X.index.equals(y.index):
         raise ValueError("X and y must share the same index")
@@ -40,12 +42,14 @@ def backtest(
             raise ValueError(f"{model.name}: bad predictions for refit {fold.refit_date:%Y-%m}")
         log.debug("%s refit %s: train=%d test=%d %.3fs", model.name, f"{fold.refit_date:%Y-%m}",
                   len(fold.train), len(fold.test), seconds)
+        info = model.info() if hasattr(model, "info") else {}
         out.append(pd.DataFrame({
             "origin": fold.test,
             "refit_date": fold.refit_date,
             "y_true": y.loc[fold.test].to_numpy(),
             "y_pred": pred,
             "fit_seconds": seconds,
+            "model_info": json.dumps(info, sort_keys=True),
         }))
     return pd.concat(out, ignore_index=True)
 

@@ -39,6 +39,7 @@ models:
   random_walk: {}
   ar: {max_lag: 12, criterion: aic}
   var: {max_lag: 6, criterion: aic}
+  vecm: {max_lag: 6, deterministic: co, signif: 0.05}
   svr:
     C: [1, 10, 100, 1000]
     gamma: [0.0001, 0.001, 0.01]

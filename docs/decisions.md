@@ -25,3 +25,7 @@ Short records of non-obvious choices: what was decided and why.
 | D19 | AR baseline is a direct h-step OLS regression on FX lags, with p in 0..12 chosen by AIC on each training window | One regression per horizon matches how SVR/LSTM forecast; p = 0 reduces to drift |
 | D20 | The random walk is always included in a run as the Theil's U benchmark | Every reported number can be read against "no change" |
 | D21 | End-of-month robustness check using `DEXINUS` for the random-walk comparison with the paper | The paper's Bloomberg data is likely end-of-month; EXINUS is a monthly average, which is smoother |
+| D22 | VAR: iterated forecasts on dlog_fx + 7 differentials; differencing re-chosen by ADF and p by AIC (min 1) on each training window; parameters fixed between refits | Same refit rule as every other model; no test-period information in the specification |
+| D23 | VECM on monetary-model levels (log FX, relative prices, output, money, rate differential); rank by Johansen trace (5%) per refit, capped at K−1; constant outside the cointegrating relation (`co`) | Uses the M2 cointegration finding; `co` allows the trending levels seen in USD/INR |
+| D24 | For RQ2 in the econometric family, the FX-only counterpart of the VAR is the AR baseline | A one-variable VAR is an AR. Caveat: AR is a direct forecast, VAR is iterated |
+| D25 | Publication lag is not implemented for VAR/VECM (the runner refuses it) | They read the series directly; the lag check will be done with SVR/LSTM, where it is a simple input shift |
