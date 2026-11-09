@@ -191,8 +191,10 @@ ML_PROJECT_/
 │   │   ├── panel.py             # align series into one monthly panel
 │   │   └── __main__.py          # CLI: python -m fxforecast.data [--refresh]
 │   ├── features/
-│   │   ├── transforms.py        # log-diff, differentials, lags, FX-only vs macro sets
-│   │   └── diagnostics.py       # ADF, KPSS, Granger, Johansen, correlation
+│   │   ├── transforms.py        # log-diff, US−India differentials, differencing
+│   │   ├── supervised.py        # (X, y) per horizon; FX-only vs FX+macro; publication lag
+│   │   ├── scaling.py           # scalers fit on train only
+│   │   └── diagnostics.py       # ADF, KPSS, Granger, Johansen, Ljung–Box
 │   ├── models/                  # every model: fit(train) / predict(h), same interface
 │   │   ├── baselines.py         # random walk, drift, AR/ARIMA
 │   │   ├── var.py               # VAR / VECM (statsmodels)
@@ -204,6 +206,7 @@ ML_PROJECT_/
 │   │   └── stat_tests.py        # Diebold–Mariano, Clark–West
 │   ├── experiments/
 │   │   ├── eda.py               # M2: figures + diagnostics → results/eda/README.md
+│   │   ├── splits.py            # M3: fold tables + diagram → results/splits/README.md
 │   │   └── run.py               # orchestration: grid × horizons × folds → results/
 │   └── reporting/
 │       ├── tables.py            # DataFrame → Markdown
