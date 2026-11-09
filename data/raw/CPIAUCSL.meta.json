@@ -1,0 +1,9 @@
+{
+  "series_id": "CPIAUCSL",
+  "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCSL",
+  "fetched_at_utc": "2026-11-09T15:46:08+00:00",
+  "sha256": "8556b710094027fa4724641d48be620cc37c04abfa15a0c496378cf1146c1549",
+  "n_obs": 956,
+  "first": "1947-01-01",
+  "last": "2026-09-01"
+}

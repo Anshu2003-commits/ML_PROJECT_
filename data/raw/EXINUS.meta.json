@@ -1,0 +1,9 @@
+{
+  "series_id": "EXINUS",
+  "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=EXINUS",
+  "fetched_at_utc": "2026-11-09T15:46:08+00:00",
+  "sha256": "94de995ef28ecc8284bd58abd9b1b65f615fb4800b4aff5ceb90048bc22cb138",
+  "n_obs": 646,
+  "first": "1973-01-01",
+  "last": "2026-10-01"
+}

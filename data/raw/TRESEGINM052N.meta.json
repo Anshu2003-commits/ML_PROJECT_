@@ -1,0 +1,9 @@
+{
+  "series_id": "TRESEGINM052N",
+  "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=TRESEGINM052N",
+  "fetched_at_utc": "2026-11-09T15:46:28+00:00",
+  "sha256": "bfe13c6bf6445cc01608a1bbf1b520057cf6a4dea3d96f6aa009cd69bef020a3",
+  "n_obs": 844,
+  "first": "1950-12-01",
+  "last": "2026-09-01"
+}

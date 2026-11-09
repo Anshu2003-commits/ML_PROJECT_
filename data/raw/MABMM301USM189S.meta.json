@@ -1,0 +1,9 @@
+{
+  "series_id": "MABMM301USM189S",
+  "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=MABMM301USM189S",
+  "fetched_at_utc": "2026-11-09T15:46:27+00:00",
+  "sha256": "55b6b222817cc9ed8b397bdcdc5d6f00d59b06f6eaaa778093052e827a3d5362",
+  "n_obs": 767,
+  "first": "1960-01-01",
+  "last": "2023-11-01"
+}

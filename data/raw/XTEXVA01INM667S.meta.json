@@ -1,0 +1,9 @@
+{
+  "series_id": "XTEXVA01INM667S",
+  "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=XTEXVA01INM667S",
+  "fetched_at_utc": "2026-11-09T15:46:29+00:00",
+  "sha256": "17bfe1a0c778d40f78c12574b47cf61c47a2d2891235fbc1f7d56dbf2c734023",
+  "n_obs": 440,
+  "first": "1990-01-01",
+  "last": "2026-08-01"
+}

@@ -15,12 +15,12 @@ ML coursework project. It extends Giri & Kaushik (2020), [arXiv:2002.10247](http
 - Multi-horizon forecasts (1, 3, 6 months); replication on 1994–2018 plus an extension to the latest data
 
 ## Status
-Planning stage. See **[docs/PLAN.md](docs/PLAN.md)** for the full plan, architecture and milestones.
+See **[docs/PLAN.md](docs/PLAN.md)** for the full plan, architecture and milestones.
 
 | Milestone | Status |
 |---|---|
 | M0 Plan and setup | ✅ |
-| M1 Data layer | ⏳ |
+| M1 Data layer: 17 FRED series, 1994-04 to 2023-01 ([data dictionary](docs/data_dictionary.md)) | ✅ |
 | M2 EDA and diagnostics | ⏳ |
 | M3 Features and walk-forward splitter | ⏳ |
 | M4 Baselines and metrics | ⏳ |
@@ -33,7 +33,14 @@ Planning stage. See **[docs/PLAN.md](docs/PLAN.md)** for the full plan, architec
 python -m venv .venv          # Python 3.11 or 3.12 recommended
 .venv\Scripts\activate        # Windows
 pip install -r requirements.txt
+pip install -e .
+```
+
+## Run
+```bash
+python -m fxforecast.data     # validate cached FRED data, build data/processed/panel.parquet
+python -m pytest              # run the test suite
 ```
 
 ## Data
-Monthly series from [FRED](https://fred.stlouisfed.org/) (public CSV endpoint, no API key needed). See the data dictionary in [docs/PLAN.md](docs/PLAN.md#21-data-dictionary-fred-monthly).
+Monthly series from [FRED](https://fred.stlouisfed.org/), downloaded through the public CSV endpoint (no API key needed). A raw snapshot is committed in `data/raw/`. See the [data dictionary](docs/data_dictionary.md).

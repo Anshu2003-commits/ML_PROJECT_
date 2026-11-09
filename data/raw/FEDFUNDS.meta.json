@@ -1,0 +1,9 @@
+{
+  "series_id": "FEDFUNDS",
+  "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=FEDFUNDS",
+  "fetched_at_utc": "2026-11-09T15:46:27+00:00",
+  "sha256": "06ded1625e05391a1407f1d7d721e482e8b62916c6c5fe9491b76d74285ddd69",
+  "n_obs": 868,
+  "first": "1954-07-01",
+  "last": "2026-10-01"
+}
