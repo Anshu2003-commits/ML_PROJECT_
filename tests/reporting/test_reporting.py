@@ -31,5 +31,14 @@ def test_plots_write_png_files(tmp_path):
         plots.correlation_heatmap(df, tmp_path / "corr.png", title="t"),
         plots.acf_plot(df["a"], tmp_path / "acf.png", title="t", nlags=12),
     ]
+    paths += [
+        plots.forecast_paths(df["a"], {"x": df["b"], "y": df["c"]}, tmp_path / "paths.png", title="t"),
+        plots.theil_u_dots(pd.DataFrame({"h=1": [0.9, 1.1], "h=3": [1.0, 0.95]},
+                                        index=pd.MultiIndex.from_tuples([("m", "FX only"), ("m", "FX + macro")])),
+                           tmp_path / "dots.png", title="t", reference={"h=1": 0.98}),
+        plots.ratio_heatmap(pd.DataFrame({"p1": [0.9, 1.2]}, index=["a", "b"]), tmp_path / "heat.png", title="t"),
+        plots.grouped_bars(pd.DataFrame({"x": [1.0, np.nan], "y": [2.0, 3.0]}, index=["a", "b"]),
+                           tmp_path / "bars.png", title="t", ylabel="v"),
+    ]
     for p in paths:
         assert p.exists() and p.stat().st_size > 1000

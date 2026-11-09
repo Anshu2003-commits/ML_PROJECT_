@@ -208,6 +208,8 @@ ML_PROJECT_/
 │   ├── experiments/
 │   │   ├── eda.py               # M2: figures + diagnostics → results/eda/README.md
 │   │   ├── splits.py            # M3: fold tables + diagram → results/splits/README.md
+│   │   ├── analysis.py          # M8: DM/CW tests, sub-periods, publication lags, VAR ablation
+│   │   ├── figures.py           # M9: report figures → results/final/figures/
 │   │   ├── tracking.py          # run folder: config, git commit, versions, data hashes
 │   │   └── run.py               # orchestration: models × schemes × horizons → results/<stage>/
 │   └── reporting/

@@ -14,8 +14,13 @@ ML coursework project. It extends Giri & Kaushik (2020), [arXiv:2002.10247](http
 - Diebold–Mariano and Clark–West significance tests
 - Multi-horizon forecasts (1, 3, 6 months); replication on 1994–2018 plus an extension to the latest data
 
+## 📄 Report
+**[report/REPORT.md](report/REPORT.md)**: the full write-up (abstract, method, results for RQ1/RQ2, discussion, limitations, references).
+
 ## Headline results
-Full numbers: [results/final](results/final/README.md) · tests: [analysis](results/final/analysis.md) · narrative: [docs/findings.md](docs/findings.md)
+Full numbers: [results/final](results/final/README.md) · tests: [analysis](results/final/analysis.md) · narrative: [docs/findings.md](docs/findings.md) · validation: [docs/VALIDATION.md](docs/VALIDATION.md)
+
+![Theil's U by model and horizon](results/final/figures/theil_u.png)
 
 - **The base paper's results do not beat a "no change" forecast.** On its own test window (2016-08 to 2018-12), the random walk has RMSE 0.95 INR (1.28 on end-of-month rates). The paper's best model, the LSTM, has 1.69.
 - **RQ1:** VAR, SVR and LSTM with macro inputs forecast within about ±10% of the random walk's RMSE. **None is significantly better than the random walk or drift** (Diebold–Mariano, 5%) over 2010–2023 at 1, 3 or 6 months. ML/DL models are not significantly better than the VAR overall. The paper's LSTM > SVM > VAR ranking is not reproduced.
@@ -36,7 +41,7 @@ See **[docs/PLAN.md](docs/PLAN.md)** for the full plan, architecture and milesto
 | M6 SVR ([results](results/svr/README.md)) | ✅ |
 | M7 LSTM ([results](results/lstm/README.md)) | ✅ |
 | M8 Full evaluation: significance, sub-periods, publication lags, ablation ([analysis](results/final/analysis.md)) | ✅ |
-| M9 Report | ⏳ |
+| M9 Report, figures, clean-clone reproduction ([report](report/REPORT.md), [validation](docs/VALIDATION.md)) | ✅ |
 
 ## Setup
 ```bash
@@ -61,6 +66,7 @@ python -m fxforecast.experiments.run --stage final --models drift ar var vecm sv
 python -m fxforecast.experiments.run --stage publag1 --models svr lstm --feature-sets fx_plus_macro --publication-lag 1
 python -m fxforecast.experiments.run --stage publag2 --models svr lstm --feature-sets fx_plus_macro --publication-lag 2
 python -m fxforecast.experiments.analysis   # -> results/final/analysis.md
+python -m fxforecast.experiments.figures    # -> results/final/figures/
 
 python -m pytest                       # run the test suite
 ```
