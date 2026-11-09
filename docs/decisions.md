@@ -21,3 +21,7 @@ Short records of non-obvious choices: what was decided and why.
 | D15 | Replication training starts 1995-09, not 1994-04 as in the paper | 12 months are needed for the 12-month changes and up to 6 more for lags. The test window (2016-08 to 2018-12, 29 months) matches the paper exactly |
 | D16 | SVR/LSTM take the differentials as built (scaled on train only); the VAR uses the differenced versions from the M2 stationarity tests | Nonlinear learners don't need stationarity for estimation; the VAR does |
 | D17 | Walk-forward refits every 12 months from 2010-01 (13 folds, 156 one-step forecasts) | Enough test points for Diebold–Mariano tests while keeping LSTM training cost manageable |
+| D18 | Every model gets the same rows built with 12 lags (`features.max_lags`) and picks the columns it needs; the runner checks all models forecast identical origins | Like-for-like comparison; Theil's U and DM tests need matched forecasts. Replication training therefore starts 1996-03 (supersedes the date in D15) |
+| D19 | AR baseline is a direct h-step OLS regression on FX lags, with p in 0..12 chosen by AIC on each training window | One regression per horizon matches how SVR/LSTM forecast; p = 0 reduces to drift |
+| D20 | The random walk is always included in a run as the Theil's U benchmark | Every reported number can be read against "no change" |
+| D21 | End-of-month robustness check using `DEXINUS` for the random-walk comparison with the paper | The paper's Bloomberg data is likely end-of-month; EXINUS is a monthly average, which is smoother |

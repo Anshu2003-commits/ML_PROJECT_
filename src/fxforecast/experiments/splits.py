@@ -34,7 +34,8 @@ def fold_table(folds, horizon: int) -> pd.DataFrame:
     return pd.DataFrame(rows).set_index("refit")
 
 
-def run(cfg: dict, out_dir: Path, n_lags: int = 6) -> Path:
+def run(cfg: dict, out_dir: Path) -> Path:
+    n_lags = cfg["features"]["max_lags"]
     panel = pd.read_parquet(resolve_path(cfg["data"]["processed_dir"]) / "panel.parquet")
     feats = macro_differentials(panel)
     rep, wf = cfg["experiments"]["replication"], cfg["experiments"]["walk_forward"]

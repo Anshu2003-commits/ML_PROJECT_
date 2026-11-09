@@ -14,6 +14,14 @@ def test_to_markdown_formats_numbers():
     assert md[3] == "| b | 1.0e-09 | False | 4 |"
 
 
+def test_to_markdown_multiindex_and_int_column():
+    df = pd.DataFrame({"n": [29], "rmse": [0.84699]},
+                      index=pd.MultiIndex.from_tuples([("fx_only", "ar")], names=["feature_set", "model"]))
+    md = to_markdown(df, 2).splitlines()
+    assert md[0] == "| feature_set | model | n | rmse |"
+    assert md[2] == "| fx_only | ar | 29 | 0.85 |"
+
+
 def test_plots_write_png_files(tmp_path):
     idx = pd.date_range("2000-01-01", periods=60, freq="MS")
     df = pd.DataFrame(np.random.default_rng(0).normal(size=(60, 4)), index=idx, columns=list("abcd"))

@@ -1,0 +1,9 @@
+{
+  "series_id": "DEXINUS",
+  "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DEXINUS",
+  "fetched_at_utc": "2026-11-09T16:08:31+00:00",
+  "sha256": "92cf1549cd82aa673884f57042a116ba349e658007fee9e8bc875798f80cbeee",
+  "n_obs": 13492,
+  "first": "1973-01-02",
+  "last": "2026-10-30"
+}

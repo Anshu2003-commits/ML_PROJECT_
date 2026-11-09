@@ -37,6 +37,9 @@ def main(argv: list[str] | None = None) -> None:
         fetch_series(fred_id, raw_dir, refresh=args.refresh)
         raw[column] = load_series(fred_id, raw_dir)
     print(coverage_report(raw).to_string())
+    if cfg["data"].get("fx_daily"):
+        # daily series is not part of the monthly panel; cached for the end-of-month check
+        fetch_series(cfg["data"]["fx_daily"], raw_dir, refresh=args.refresh)
 
     # Strict checks apply to the analysis window; problems outside it are only reported.
     start = pd.Timestamp(cfg["data"]["start"])

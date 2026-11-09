@@ -21,14 +21,15 @@ def _fmt(value, digits: int) -> str:
 
 
 def to_markdown(df: pd.DataFrame, digits: int = 3) -> str:
-    """Index becomes the first column; floats are rounded to ``digits``."""
-    index_name = df.index.name or ""
-    header = [index_name, *map(str, df.columns)]
+    """Index becomes the first column(s); floats are rounded to ``digits``, ints stay ints."""
+    index_names = [n or "" for n in df.index.names]
+    header = [*index_names, *map(str, df.columns)]
     lines = [
         "| " + " | ".join(header) + " |",
         "|" + "|".join(["---"] * len(header)) + "|",
     ]
-    for idx, row in df.iterrows():
-        cells = [str(idx), *(_fmt(v, digits) for v in row.tolist())]
+    for idx, *values in df.itertuples(name=None):   # itertuples keeps each column's dtype
+        keys = idx if isinstance(idx, tuple) else (idx,)
+        cells = [*map(str, keys), *(_fmt(v, digits) for v in values)]
         lines.append("| " + " | ".join(cells) + " |")
     return "\n".join(lines)
