@@ -21,7 +21,7 @@ See **[docs/PLAN.md](docs/PLAN.md)** for the full plan, architecture and milesto
 |---|---|
 | M0 Plan and setup | ✅ |
 | M1 Data layer: 17 FRED series, 1994-04 to 2023-01 ([data dictionary](docs/data_dictionary.md)) | ✅ |
-| M2 EDA and diagnostics | ⏳ |
+| M2 EDA and diagnostics ([report](results/eda/README.md)) | ✅ |
 | M3 Features and walk-forward splitter | ⏳ |
 | M4 Baselines and metrics | ⏳ |
 | M5–M7 VAR, SVR, LSTM | ⏳ |
@@ -38,8 +38,9 @@ pip install -e .
 
 ## Run
 ```bash
-python -m fxforecast.data     # validate cached FRED data, build data/processed/panel.parquet
-python -m pytest              # run the test suite
+python -m fxforecast.data              # validate cached FRED data, build data/processed/panel.parquet
+python -m fxforecast.experiments.eda   # figures + diagnostics -> results/eda/README.md
+python -m pytest                       # run the test suite
 ```
 
 ## Data
